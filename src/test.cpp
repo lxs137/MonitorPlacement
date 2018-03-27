@@ -1,9 +1,8 @@
-#include <iostream>
-#include "echo.hpp"
+#include "echo.h"
 
-int main( int argc, char **argv )
-{
-  std::string name = "world";
+int main() {
+  std::string name("world");
   speak(name);
+  return 0;
 }
 
