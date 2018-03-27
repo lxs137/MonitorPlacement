@@ -6,6 +6,10 @@ TARGET_DIR = target
 SRCS = $(shell find $(SRC_DIR) -name "*.cpp")
 OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(TARGET_DIR)/%.o)
 HEADERS = $(shell find $(INCLUDE_DIR) -name "*.hpp")
+ifndef tag
+tag = $(shell date +%Y/%m/%d-%R)
+endif
+
 
 default_target: all
 
@@ -21,14 +25,9 @@ dir :
 clean :
 	rm -rf $(OBJS)
 
-.ONESHELL :
 deploy : clean
 	git add .
-	ifndef tag
-	git commit -m "$(shell date +%Y/%m/%d-%R)"
-	else
 	git commit -m "$(tag)"
-	fi
 	git push
 	
 .PHONY : deploy clean all default_target
