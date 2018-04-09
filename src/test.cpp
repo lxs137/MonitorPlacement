@@ -21,7 +21,8 @@
 #include <citygml/citygml.h>
 #include <citygml/citymodel.h>
 #include <citygml/cityobject.h>
-#include "print.h";
+#include "print.h"
+#include "parser.h"
 
 void analyzeObject( const citygml::CityObject*, unsigned int );
 
@@ -93,36 +94,15 @@ int main( int argc, char **argv )
 
     std::cout << "Done in " << difftime( end, start ) << " seconds." << std::endl;
 
-    /*
-    std::cout << "Analyzing the city objects..." << std::endl;
-
-    citygml::CityObjectsMap::const_iterator it = cityObjectsMap.begin();
-
-    for ( ; it != cityObjectsMap.end(); ++it )
-    {
-        const citygml::CityObjects& v = it->second;
-
-        std::cout << ( log ? " Analyzing " : " Found " ) << v.size() << " " << citygml::getCityObjectsClassName( it->first ) << ( ( v.size() > 1 ) ? "s" : "" ) << "..." << std::endl;
-
-        if ( log )
-        {
-            for ( unsigned int i = 0; i < v.size(); i++ )
-            {
-                std::cout << "  + found object " << v[i]->getId();
-                if ( v[i]->getChildCount() > 0 ) std::cout << " with " << v[i]->getChildCount() << " children";
-                std::cout << " with " << v[i]->size() << " geometr" << ( ( v[i]->size() > 1 ) ? "ies" : "y" );
-                std::cout << std::endl;
-            }
-        }
-    }
-    */
-
     if ( log )
     {
         std::cout << std::endl << "Objects hierarchy:" << std::endl;
-       const citygml::ConstCityObjects& roots = city->getRootCityObjects();
-
-       for ( unsigned int i = 0; i < roots.size(); i++ ) analyzeObject( roots[ i ], 2 );
+        const citygml::ConstCityObjects& roots = city->getRootCityObjects();
+        std::cout << "Envelope: " << city->getEnvelope() << std::endl;
+        // std::vector<const citygml::CityObject*> parser_result = city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Window);
+        // for(auto it = parser_result.begin(); it != parser_result.end(); it++) {
+        //     printCityObject(**it);
+        // }
     }
 
     std::cout << "Done." << std::endl;
@@ -133,8 +113,6 @@ int main( int argc, char **argv )
 void analyzeObject( const citygml::CityObject* object, unsigned int indent )
 {
     if(object->getType() == citygml::CityObject::CityObjectsType::COT_Window) {
-        for(unsigned int i = 0; i < indent; i++) std::cout << " ";
-        std::cout << "Object (" << object->getTypeAsString() << "): " << std::endl;
         printCityObject(*object);
     }
 

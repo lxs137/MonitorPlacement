@@ -4,6 +4,6 @@
 #include <citygml/citygml.h>
 #include <vector>
 
-std::vector<citygml::CityObject> parserTargetChildObjects(const citygml::CityObject& object, const std::vector<citygml::CityObject::CityObjectsType>& target);
+std::vector<const citygml::CityObject*> parserTargetChildObjects(const citygml::CityObject* object, citygml::CityObject::CityObjectsType target);
 
 #endif
