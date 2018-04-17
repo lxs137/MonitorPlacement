@@ -6,8 +6,9 @@ SET(CMAKE_CXX_STANDARD 11)
 
 INCLUDE_DIRECTORIES(./include)
 INCLUDE_DIRECTORIES(/usr/local/include)
+INCLUDE_DIRECTORIES(/usr/local/opt/googletest/include)
 
 AUX_SOURCE_DIRECTORY(./src/voxelizer DIR_SRC)
 AUX_SOURCE_DIRECTORY(./src DIR_SRC)
 
-ADD_EXECUTABLE(parser ${DIR_SRC})
+ADD_EXECUTABLE(parser ${DIR_SRC} src/voxelizer/mesh.cpp src/voxelizer/voxelizer.cpp)
