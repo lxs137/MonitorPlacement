@@ -96,13 +96,13 @@ int main( int argc, char **argv )
 
     if ( log )
     {
-        std::cout << std::endl << "Objects hierarchy:" << std::endl;
-        const citygml::ConstCityObjects& roots = city->getRootCityObjects();
-        std::cout << "Envelope: " << city->getEnvelope() << std::endl;
-        // std::vector<const citygml::CityObject*> parser_result = city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Window);
-        // for(auto it = parser_result.begin(); it != parser_result.end(); it++) {
-        //     printCityObject(**it);
-        // }
+        // std::cout << std::endl << "Objects hierarchy:" << std::endl;
+        // const citygml::ConstCityObjects& roots = city->getRootCityObjects();
+        // std::cout << "Envelope: " << city->getEnvelope() << std::endl;
+        std::vector<const citygml::CityObject*> parser_result = city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Window);
+        for(auto it = parser_result.begin(); it != parser_result.end(); it++) {
+            monitor::printCityObject(**it);
+        }
     }
 
     std::cout << "Done." << std::endl;
@@ -113,7 +113,7 @@ int main( int argc, char **argv )
 void analyzeObject( const citygml::CityObject* object, unsigned int indent )
 {
     if(object->getType() == citygml::CityObject::CityObjectsType::COT_Window) {
-        printCityObject(*object);
+        monitor::printCityObject(*object);
     }
 
    for (unsigned int i = 0; i < object->getChildCityObjectsCount(); i++)

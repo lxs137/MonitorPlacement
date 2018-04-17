@@ -1,11 +1,16 @@
+#include "print.h"
+
 #include <iostream>
 #include <memory>
 #include <vector>
+
 #include <citygml/attributesmap.h>
 #include <citygml/geometry.h>
 #include <citygml/vecs.hpp>
 #include <citygml/polygon.h>
-#include "print.h"
+#include <citygml/cityobject.h>
+
+namespace monitor {
 
 void printCityObject(const citygml::CityObject& object) {
   std::cout << "Object(" << object.getTypeAsString() << "): " << object.getId() << std::endl;
@@ -26,7 +31,15 @@ void printCityObject(const citygml::CityObject& object) {
       for(auto it = vertices.begin(); it != vertices.end(); it++) {
         std::cout << "  " << (*it) << std::endl;
       }
+      const std::vector<unsigned int>& indices = polygon->getIndices();
+      if(!indices.empty()) 
+        std::cout << "Indices: " << std::endl;
+      for(auto it = indices.begin(); it != indices.end(); it++) {
+        std::cout << "  " << (*it) << std::endl;
+      }
     }  
     std::cout << std::endl;
   }
+}
+
 }

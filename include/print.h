@@ -1,9 +1,11 @@
-#ifndef PRINT_H
-#define PRINT_H
+#ifndef PRINT_H_
+#define PRINT_H_
 
 #include <vector>
 #include <citygml/citygml.h>
 
-void printCityObject(const citygml::CityObject& object);
+namespace monitor {
+  void printCityObject(const citygml::CityObject& object);
+}
 
 #endif
