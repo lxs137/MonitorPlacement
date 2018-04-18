@@ -3,6 +3,7 @@
 //
 
 #include "voxelizer/mesh.h"
+
 #include <vector>
 #include "voxelizer/voxelizer.h"
 
@@ -17,7 +18,27 @@ namespace monitor {
       this->mesh->vertices[verticIndex].z = (float)it->z;
     }
   }
+
   Mesh::~Mesh() {
     vx_mesh_free(this->mesh);
+  }
+
+  std::ostream& operator<<(std::ostream& os, const Mesh& mesh) {
+    os << "monitor::Mesh" << std::endl;
+    os << " nVertices: " << mesh.mesh->nvertices << std::endl;
+    if(mesh.mesh->nvertices != 0)
+      os << " Vertices: " << std::endl;
+    for(size_t i = 0; i < mesh.mesh->nvertices; i++) {
+      vx_vertex_t *v = &(mesh.mesh->vertices[i]);
+      os << " " << v->x << " " << v->y << " " << v->z << std::endl;
+    }
+    os << " nIndices: " << mesh.mesh->nindices << std::endl;
+    if(mesh.mesh->nindices != 0)
+      os << " Indices: " << std::endl;
+    for(size_t i = 0; i < mesh.mesh->nindices; i += 3) {
+      unsigned int *triIndices = &(mesh.mesh->indices[i]);
+      os << " " << triIndices[0] << " " << triIndices[1] << " " << triIndices[2] << std::endl;
+    }
+    return os;
   }
 }

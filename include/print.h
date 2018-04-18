@@ -5,7 +5,7 @@
 #include <citygml/citygml.h>
 
 namespace monitor {
-  void printCityObject(const citygml::CityObject& object);
+  void printCityObject(const citygml::CityObject* object);
 }
 
 #endif

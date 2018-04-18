@@ -9,7 +9,7 @@
 #include <citygml/vecs.hpp>
 #include "voxelizer/mesh.h"
 
-#define EQUAL(a,b) std::abs(a-b)<1e-4
+#define EQUAL(a,b) (a-b<1e-4)&&(b-a<1e-4)
 
 namespace monitor {
 
