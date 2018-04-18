@@ -15,16 +15,20 @@
 #include "print.h"
 #include "voxelizer/mesh.h"
 
-TEST(JUST_TEST, FIRST) {
+TEST(PARSE_MESH_FROM_CITY_OBJECT, VERTICES_COUNT) {
   citygml::ParserParams params;
-  std::shared_ptr<const citygml::CityModel> city = citygml::load("../data/LOD3_1.gml", params);
+  std::shared_ptr<const citygml::CityModel> city = citygml::load("./data/LOD3_1.gml", params);
   std::vector<const citygml::CityObject*> parser_result = city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Window);
-  for(auto it = parser_result.begin(); it != parser_result.begin() + 1; it++) {
-    std::shared_ptr<monitor::Mesh> mesh = monitor::parseMeshFromCityObject(*it);
-    monitor::printCityObject(*it);
-    std::cout << *mesh << std::endl;
+  const citygml::CityObject* object = parser_result.front();
+  std::shared_ptr<monitor::Mesh> mesh = monitor::parseMeshFromCityObject(object);
+  std::vector<monitor::Voxel> voxels;
+  mesh->voxelizer(voxels, 0.25, 0.025);
+  monitor::printCityObject(object);
+  std::cout << *mesh << std::endl;
+  for(auto it = voxels.begin(); it != voxels.end(); it++) {
+    std::cout << *it << std::endl;
   }
-  EXPECT_EQ(5, monitor::addTest(2, 3));
+  EXPECT_EQ(object->getGeometry(0).getPolygon(0)->getVertices().size(), mesh->getVerticesCount() + 1);
 }
 
 int main(int argc, char **argv) {

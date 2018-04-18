@@ -9,18 +9,32 @@
 
 namespace monitor {
   Mesh::Mesh(std::vector<TVec3d> &vertics, std::vector<unsigned int> &indices) {
-    this->mesh = vx_mesh_alloc((int)vertics.size() * 3, (int)indices.size());
+    this->mesh = vx_mesh_alloc((int)vertics.size(), (int)indices.size());
     memcpy(this->mesh->indices, indices.data(), sizeof(unsigned int) * indices.size());
     int verticIndex = 0;
     for(auto it = vertics.begin(); it != vertics.end(); it++) {
       this->mesh->vertices[verticIndex].x = (float)it->x;
       this->mesh->vertices[verticIndex].y = (float)it->y;
       this->mesh->vertices[verticIndex].z = (float)it->z;
+      verticIndex++;
     }
   }
 
   Mesh::~Mesh() {
     vx_mesh_free(this->mesh);
+  }
+
+  void Mesh::voxelizer(std::vector<monitor::Voxel> &voxels, double res, double prec) {
+    float resF = (float)res, precF = (float)prec;
+    vx_point_cloud_t* result = vx_voxelize_pc(this->mesh, resF, resF, resF, precF);
+    std::vector<monitor::Voxel> resultVoxel;
+    resultVoxel.reserve(result->nvertices);
+    for(size_t i = 0; i < result->nvertices; i++) {
+      vx_vertex_t *v = &(result->vertices[i]);
+      resultVoxel.emplace_back(v->x, v->y, v->z);
+    }
+    voxels.insert(voxels.end(), resultVoxel.begin(), resultVoxel.end());
+    vx_point_cloud_free(result);
   }
 
   std::ostream& operator<<(std::ostream& os, const Mesh& mesh) {

@@ -68,10 +68,6 @@ void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, st
   }
 }
 
-int addTest(int i, int j) {
-  return i + j;
-}
-
 
 }
 
