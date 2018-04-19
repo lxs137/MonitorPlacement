@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = --std=c++11 -Wall
+CXXFLAGS = --std=c++11 -Wall -Wfloat-equal -Weffc++
 LDFLAGS = -L /usr/local/lib -l citygml
 SRC_DIR = src
 INCLUDE_DIR = include

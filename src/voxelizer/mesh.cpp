@@ -24,17 +24,35 @@ namespace monitor {
     vx_mesh_free(this->mesh);
   }
 
-  void Mesh::voxelizer(std::vector<monitor::Voxel> &voxels, double res, double prec) {
-    float resF = (float)res, precF = (float)prec;
+  void Mesh::voxelizer(std::vector<monitor::Voxel> &voxels, double resolution) {
+    float resF = (float)resolution, precF = resF * 0.1f, resF_1 = 1.0f / resF;
     vx_point_cloud_t* result = vx_voxelize_pc(this->mesh, resF, resF, resF, precF);
     std::vector<monitor::Voxel> resultVoxel;
     resultVoxel.reserve(result->nvertices);
     for(size_t i = 0; i < result->nvertices; i++) {
       vx_vertex_t *v = &(result->vertices[i]);
-      resultVoxel.emplace_back(v->x, v->y, v->z);
+      resultVoxel.emplace_back((int)(v->x * resF_1), (int)(v->y * resF_1), (int)(v->z * resF_1));
     }
     voxels.insert(voxels.end(), resultVoxel.begin(), resultVoxel.end());
     vx_point_cloud_free(result);
+  }
+
+  void Mesh::merge(std::shared_ptr<monitor::Mesh> that) {
+    vx_mesh_t *thatMesh = that->mesh;
+    if(thatMesh == mesh)
+      return;
+    vx_mesh_t *newMesh = vx_mesh_alloc((int)(mesh->nvertices + thatMesh->nvertices),
+                                       (int)(mesh->nindices + thatMesh->nindices));
+    memcpy(newMesh->vertices, this->mesh->vertices, sizeof(vx_vertex_t) * mesh->nvertices);
+    memcpy(&newMesh->vertices[mesh->nvertices], thatMesh->vertices, sizeof(vx_vertex_t) * thatMesh->nvertices);
+    memcpy(newMesh->indices, mesh->indices, sizeof(unsigned int) * mesh->nindices);
+    unsigned int indiceOffset = (unsigned int)mesh->nvertices;
+    unsigned int *thatIndices = &newMesh->indices[mesh->nindices];
+    for(size_t i = 0; i < thatMesh->nindices; i++) {
+      thatIndices[i] = thatMesh->indices[i] + indiceOffset;
+    }
+    vx_mesh_free(mesh);
+    mesh = newMesh;
   }
 
   std::ostream& operator<<(std::ostream& os, const Mesh& mesh) {
