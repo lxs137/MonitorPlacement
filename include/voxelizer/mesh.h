@@ -15,11 +15,12 @@ namespace monitor {
   class Mesh {
     friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
   public:
+    Mesh(const Mesh&);
     Mesh(std::vector<TVec3d> &vertics, std::vector<unsigned int> &indices);
     size_t getVerticesCount() { return this->mesh->nvertices; }
     size_t getIndicesCount() { return this->mesh->nindices; }
-    void voxelizer(std::vector<Voxel> &voxels, double resolution);
-    void merge(std::shared_ptr<Mesh>);
+    void voxelizer(std::vector<Voxel> &voxels, double resolution[3]);
+    void merge(const Mesh&);
     ~Mesh();
   private:
     vx_mesh_t* mesh;

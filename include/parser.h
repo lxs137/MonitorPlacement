@@ -10,7 +10,7 @@
 namespace monitor {
   std::vector<const citygml::CityObject*> parserTargetChildObjects(const citygml::CityObject* object, citygml::CityObject::CityObjectsType target);
 
-  const std::shared_ptr<Mesh> parseMeshFromCityObject(const citygml::CityObject* object);
+  Mesh parseMeshFromCityObject(const citygml::CityObject* object);
 
   void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, std::vector<TVec3d> &allVertices,
                                std::vector<unsigned int> &allIndices);

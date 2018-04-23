@@ -30,6 +30,11 @@ ADD_EXECUTABLE(parser ./src/main.cpp)
 
 TARGET_LINK_LIBRARIES(parser parser_lib)
 
+
+##############
+# Unit Tests
+##############
+
 if (APPLE)
     ADD_DEFINITIONS(-DGTEST_USE_OWN_TR1_TUPLE)
     ADD_DEFINITIONS(-D__GLIBCXX__)
@@ -39,9 +44,6 @@ ENABLE_TESTING()
 
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE})
 
-##############
-# Unit Tests
-##############
 ADD_EXECUTABLE(unittest ${UNITTEST_DIR}/parser.cpp)
 
 TARGET_LINK_LIBRARIES(unittest ${GTEST_LIBRARY} parser_lib)

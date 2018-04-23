@@ -55,6 +55,10 @@ test-parser : dir $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN)
 	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
 .PHONY : test
 
+test-memcheck : test-parser
+	valgrind --tool=memcheck --leak-check=full $(TEST_BIN)
+.PHONY : test-memcheck
+
 deploy : clean
 	git add .
 	git commit -m "$(tag)"
@@ -66,5 +70,6 @@ help :
 	@echo "... all"
 	@echo "... clean"
 	@echo "... test-parser"
+	@echo "... test-memcheck"
 	@echo "... tag=\"\" deploy"
 .PHONY : help

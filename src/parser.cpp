@@ -26,7 +26,7 @@ std::vector<const citygml::CityObject*> parserTargetChildObjects(const citygml::
   return results;
 }
 
-const std::shared_ptr<Mesh> parseMeshFromCityObject(const citygml::CityObject* object) {
+Mesh parseMeshFromCityObject(const citygml::CityObject* object) {
   std::vector<TVec3d> allVertices;
   std::vector<unsigned int> allIndices;
   for(unsigned int i = 0; i < object->getGeometriesCount(); i++) {
@@ -36,7 +36,8 @@ const std::shared_ptr<Mesh> parseMeshFromCityObject(const citygml::CityObject* o
       parseVerticsFromPolygon(polygon, allVertices, allIndices);
     }
   }
-  return std::make_shared<Mesh>(allVertices, allIndices);
+  Mesh mesh(allVertices, allIndices);
+  return mesh;
 }
 
 void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, std::vector<TVec3d> &allVertices,

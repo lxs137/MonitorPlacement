@@ -8,6 +8,13 @@
 #include "voxelizer/voxelizer.h"
 
 namespace monitor {
+  Mesh::Mesh(const monitor::Mesh &other) {
+    vx_mesh_t *otherMesh = other.mesh;
+    mesh = vx_mesh_alloc((int)otherMesh->nvertices, (int)otherMesh->nindices);
+    memcpy(mesh->vertices, otherMesh->vertices, sizeof(vx_vertex_t) * otherMesh->nvertices);
+    memcpy(mesh->indices, otherMesh->indices, sizeof(unsigned int) * otherMesh->nindices);
+  }
+
   Mesh::Mesh(std::vector<TVec3d> &vertics, std::vector<unsigned int> &indices) {
     this->mesh = vx_mesh_alloc((int)vertics.size(), (int)indices.size());
     memcpy(this->mesh->indices, indices.data(), sizeof(unsigned int) * indices.size());
@@ -24,21 +31,22 @@ namespace monitor {
     vx_mesh_free(this->mesh);
   }
 
-  void Mesh::voxelizer(std::vector<monitor::Voxel> &voxels, double resolution) {
-    float resF = (float)resolution, precF = resF * 0.1f, resF_1 = 1.0f / resF;
-    vx_point_cloud_t* result = vx_voxelize_pc(this->mesh, resF, resF, resF, precF);
+  void Mesh::voxelizer(std::vector<monitor::Voxel> &voxels, double resolution[3]) {
+    float precF = resolution[0] * 0.1f,
+        resF_1[3] = {1.0f / (float)resolution[0], 1.0f / (float)resolution[1], 1.0f / (float)resolution[2]};
+    vx_point_cloud_t* result = vx_voxelize_pc(this->mesh, resolution[0], resolution[1], resolution[2], precF);
     std::vector<monitor::Voxel> resultVoxel;
     resultVoxel.reserve(result->nvertices);
     for(size_t i = 0; i < result->nvertices; i++) {
       vx_vertex_t *v = &(result->vertices[i]);
-      resultVoxel.emplace_back((int)(v->x * resF_1), (int)(v->y * resF_1), (int)(v->z * resF_1));
+      resultVoxel.emplace_back((int)(v->x * resF_1[0]), (int)(v->y * resF_1[1]), (int)(v->z * resF_1[2]));
     }
     voxels.insert(voxels.end(), resultVoxel.begin(), resultVoxel.end());
     vx_point_cloud_free(result);
   }
 
-  void Mesh::merge(std::shared_ptr<monitor::Mesh> that) {
-    vx_mesh_t *thatMesh = that->mesh;
+  void Mesh::merge(const monitor::Mesh& that) {
+    vx_mesh_t *thatMesh = that.mesh;
     if(thatMesh == mesh)
       return;
     vx_mesh_t *newMesh = vx_mesh_alloc((int)(mesh->nvertices + thatMesh->nvertices),
