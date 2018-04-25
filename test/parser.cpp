@@ -11,8 +11,8 @@
 #include <citygml/citygml.h>
 #include <citygml/citymodel.h>
 #include <citygml/cityobject.h>
-#include <world.h>
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+#include "world.h"
 #include "print.h"
 #include "voxelizer/mesh.h"
 
@@ -22,12 +22,16 @@ namespace {
   public:
     static void SetUpTestCase() {
       citygml::ParserParams params;
-      city = citygml::load("./data/LOD3_1.gml", params);
+//      city = citygml::load("./data/LOD3_1.gml", params);
+      city = citygml::load("./data/Road-LOD0.gml", params);
       std::cout << "CityModel: " << city->getEnvelope() << std::endl;
+    }
+    static void TearDownTestCase() {
+      city.reset();
     }
   protected:
     virtual void SetUp() {
-      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Window);
+      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Road);
     };
 
     virtual void TearDown() {
@@ -86,6 +90,18 @@ namespace {
     world.addVoxels(voxels3);
     std::cout<< world << std::endl;
     EXPECT_EQ(voxels1.size() + voxels2.size(), voxels3.size());
+  }
+
+  TEST_F(CityObjectParserTest, PARSE_ROAD) {
+    EXPECT_GT(parserResult.size(), 0);
+    const citygml::CityObject* road = parserResult.front();
+    monitor::Mesh mesh = monitor::parseMeshFromCityObject(road);
+    mesh.writeToFile("./data/Road.obj");
+//    std::vector<monitor::Voxel> voxels;
+//    mesh.voxelizer(voxels, resolution);
+//    monitor::Grids world = monitor::cityModelToGrids(CityObjectParserTest::city, resolution);
+//    world.addVoxels(voxels);
+//    std::cout << world << std::endl;
   }
 
 }

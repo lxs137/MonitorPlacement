@@ -101,10 +101,18 @@ namespace monitor {
     os << "Grdis: " << std::endl;
     os << " Size: " << grids.xSize << " " << grids.ySize << " " << grids.zSize << std::endl;
     os << " Grids Count: " << grids.xCount << " " << grids.yCount << " " << grids.zCount << std::endl;
-    for(int i = 0; i < grids.xCount; i++)
-      for(int j = 0; j < grids.yCount; j++)
-        for(int k = 0; k < grids.zCount; k++)
-          if(grids.grids[grids.offset(i, j, k)]) os << " (" << i << ", " << j << ", " << k << ") ";
+    unsigned long count = 0;
+    for(int i = 0; i < grids.xCount; i++) {
+      for(int j = 0; j < grids.yCount; j++) {
+        for(int k = 0; k < grids.zCount; k++) {
+          if(grids.grids[grids.offset(i, j, k)]) {
+//            os << " (" << i << ", " << j << ", " << k << ") ";
+            count++;
+          }
+        }
+      }
+    }
+    os << "\n Data Grids Count: " << count << std::endl;
     return os;
   }
 }

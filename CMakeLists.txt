@@ -22,6 +22,7 @@ INCLUDE_DIRECTORIES(/usr/local/include)
 INCLUDE_DIRECTORIES(/usr/local/opt/googletest/include)
 
 AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_LIST_DIR}/src/voxelizer DIR_SRC)
+AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_LIST_DIR}/src/sampler DIR_SRC)
 AUX_SOURCE_DIRECTORY(${CMAKE_CURRENT_LIST_DIR}/src DIR_SRC)
 LIST(REMOVE_ITEM DIR_SRC ${CMAKE_CURRENT_LIST_DIR}/src/main.cpp)
 
@@ -35,19 +36,21 @@ TARGET_LINK_LIBRARIES(parser parser_lib)
 # Unit Tests
 ##############
 
-if (APPLE)
-    ADD_DEFINITIONS(-DGTEST_USE_OWN_TR1_TUPLE)
-    ADD_DEFINITIONS(-D__GLIBCXX__)
-endif (APPLE)
+#if (APPLE)
+#    ADD_DEFINITIONS(-DGTEST_USE_OWN_TR1_TUPLE)
+#    ADD_DEFINITIONS(-D__GLIBCXX__)
+#endif (APPLE)
 
-ENABLE_TESTING()
+#ENABLE_TESTING()
 
 INCLUDE_DIRECTORIES(${GTEST_INCLUDE})
 
-ADD_EXECUTABLE(unittest ${UNITTEST_DIR}/parser.cpp)
+ADD_EXECUTABLE(unittest-parser ${UNITTEST_DIR}/parser.cpp)
+ADD_EXECUTABLE(unittest-sampler ${UNITTEST_DIR}/sampler/sampler.cpp)
 
-TARGET_LINK_LIBRARIES(unittest ${GTEST_LIBRARY} parser_lib)
-
-add_test(NAME that-test-I-made COMMAND unittest)
-
-add_test(that-other-test-I-made unittest)
+TARGET_LINK_LIBRARIES(unittest-parser ${GTEST_LIBRARY} parser_lib)
+TARGET_LINK_LIBRARIES(unittest-sampler ${GTEST_LIBRARY} parser_lib)
+#
+#add_test(NAME that-test-I-made COMMAND unittest)
+#
+#add_test(that-other-test-I-made unittest)

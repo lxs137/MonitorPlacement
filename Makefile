@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = --std=c++11 -Wall -Wfloat-equal -Weffc++
+CXXFLAGS = --std=c++11 -Wall -Wfloat-equal -Weffc++ -g
 LDFLAGS = -L /usr/local/lib -l citygml
 SRC_DIR = src
 INCLUDE_DIR = include
@@ -17,7 +17,6 @@ GTEST_OBJ = /usr/local/opt/googletest/libgtest.a
 TEST_DIR = test
 TEST_TARGET_DIR = target-test
 TEST_SRCS = $(shell find $(TEST_DIR) -name "*.cpp")
-TEST_OBJS = $(TEST_SRCS:$(TEST_DIR)/%.cpp=$(TEST_TARGET_DIR)/%.test.o)
 OBJS_EXCLUDE_MAIN = $(shell echo $(OBJS) | sed 's/target\/main.o//g')
 TEST_BIN = unittest
 
@@ -33,7 +32,8 @@ $(TARGET_DIR)/%.o : $(SRC_DIR)/%.cpp $(HEADERS)
 	$(CC) $(CXXFLAGS) -I $(INCLUDE_DIR) -c $< -o $@
 
 $(TEST_TARGET_DIR)/%.test.o : $(TEST_DIR)/%.cpp $(SRC_DIR)/%.cpp $(HEADERS)
-	$(CC) $(CXXFLAGS) -I $(INCLUDE_DIR) -I $(GTEST_INCLUDE_DIR) -pthread -c $< -o $@
+	@mkdir -p $(@D)
+	$(CC) $(CXXFLAGS) -I $(INCLUDE_DIR) -I $(GTEST_INCLUDE_DIR) -c $< -o $@
 
 all : dir $(OBJS)
 	$(CC) $(LDFLAGS) $(OBJS) -o $(BIN)
@@ -55,9 +55,12 @@ test-parser : dir $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN)
 	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
 .PHONY : test
 
-test-memcheck : test-parser
+test-sampler : dir $(TEST_TARGET_DIR)/sampler/sampler.test.o $(OBJS_EXCLUDE_MAIN)
+	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/sampler/sampler.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
+
+memcheck : test-parser
 	valgrind --tool=memcheck --leak-check=full $(TEST_BIN)
-.PHONY : test-memcheck
+.PHONY : memcheck
 
 deploy : clean
 	git add .
@@ -70,6 +73,7 @@ help :
 	@echo "... all"
 	@echo "... clean"
 	@echo "... test-parser"
-	@echo "... test-memcheck"
+	@echo "... test-sampler"
+	@echo "... memcheck"
 	@echo "... tag=\"\" deploy"
 .PHONY : help

@@ -5,6 +5,7 @@
 #include "voxelizer/mesh.h"
 
 #include <vector>
+#include <fstream>
 #include "voxelizer/voxelizer.h"
 
 namespace monitor {
@@ -61,6 +62,24 @@ namespace monitor {
     }
     vx_mesh_free(mesh);
     mesh = newMesh;
+  }
+
+  void Mesh::writeToFile(std::string filename) {
+    std::ofstream objFile;
+    objFile.open(filename, std::ios::out | std::ios::trunc);
+    if(!objFile.is_open()) {
+      std::cout << "File Can Not Open: " << filename << std::endl;
+      return;
+    }
+    for(size_t i = 0; i < mesh->nvertices; i++) {
+      vx_vertex_t *v = &(mesh->vertices[i]);
+      objFile << "v " << v->x << " " << v->y << " " << v->z << std::endl;
+    }
+    for(size_t i = 0; i < mesh->nindices; i += 3) {
+      unsigned int *triIndices = &(mesh->indices[i]);
+      objFile << "f " << triIndices[0] + 1 << " " << triIndices[1] + 1 << " " << triIndices[2] + 1 << std::endl;
+    }
+    objFile.close();
   }
 
   std::ostream& operator<<(std::ostream& os, const Mesh& mesh) {

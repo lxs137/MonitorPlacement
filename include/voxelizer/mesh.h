@@ -21,6 +21,7 @@ namespace monitor {
     size_t getIndicesCount() { return this->mesh->nindices; }
     void voxelizer(std::vector<Voxel> &voxels, double resolution[3]);
     void merge(const Mesh&);
+    void writeToFile(std::string filename);
     ~Mesh();
   private:
     vx_mesh_t* mesh;
