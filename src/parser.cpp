@@ -40,6 +40,17 @@ Mesh parseMeshFromCityObject(const citygml::CityObject* object) {
   return mesh;
 }
 
+Mesh parseMeshFromCityObjects(const std::vector<const citygml::CityObject*> &objects) {
+  Mesh mesh;
+  if(objects.size() == 0) {
+    return mesh;
+  }
+  for(auto it = objects.begin(); it != objects.end(); it++) {
+    mesh.merge(parseMeshFromCityObject(*it));
+  }
+  return mesh;
+}
+
 void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, std::vector<TVec3d> &allVertices,
                              std::vector<unsigned int> &allIndices) {
   const std::vector<TVec3d> &vertices = polygon->getVertices();

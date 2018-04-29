@@ -11,6 +11,8 @@
 #include <citygml/citymodel.h>
 #include <citygml/vecs.hpp>
 #include <gtest/gtest.h>
+#include "world.h"
+#include "parser.h"
 #include "utils.h"
 
 namespace {
@@ -44,8 +46,39 @@ namespace {
   std::shared_ptr<const citygml::CityModel> DiskSamplerTest::city = nullptr;
 
   TEST_F(DiskSamplerTest, SAMPLES) {
+    std::cout << "Samplers Count: " << samples->size() << std::endl;
+    EXPECT_GT(samples->size(), 0);
+  }
 
+  TEST_F(DiskSamplerTest, SAMPLES_CUT) {
+    std::cout << "Samplers Count: " << samples->size() << std::endl;
+    EXPECT_GT(samples->size(), 0);
+
+    std::vector<const citygml::CityObject*> roads = DiskSamplerTest::city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Road);
+    monitor::Mesh mesh = monitor::parseMeshFromCityObjects(roads);
+    std::vector<monitor::Voxel> voxels;
+    mesh.voxelizer(voxels, resolution);
+    monitor::Grids grids = monitor::cityModelToGrids(DiskSamplerTest::city, resolution);
+    std::cout << "Grids " << grids << std::endl;
+    std::cout << "Before Add Voxels " << voxels.size() << std::endl;
+    grids.addVoxels(voxels);
+    std::cout << "Generate Road Grids" << grids << std::endl;
+
+
+    std::vector<TVec2d> validSamples;
+    validSamples.reserve(samples->size());
     for(auto it = samples->begin(); it != samples->end(); it++) {
+      int x = grids.posToVoxel(it->x, 0);
+      int y = grids.posToVoxel(it->y, 1);
+      int z = grids.posToVoxel(0.01, 2);
+      if(grids.exist(x, y, z)) {
+        validSamples.push_back(*it);
+      }
+    }
+
+    std::cout << "Valid Samplers Count: " << validSamples.size() << std::endl;
+    EXPECT_GT(validSamples.size(), 0);
+    for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
       std::cout << *it << std::endl;
     }
   }
@@ -54,5 +87,10 @@ namespace {
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
+  if(argc > 1) {
+    ::testing::GTEST_FLAG(filter) = argv[1];
+  } else {
+    ::testing::GTEST_FLAG(filter) = "*SAMPLES_CUT*";
+  }
   return RUN_ALL_TESTS();
 }

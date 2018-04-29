@@ -9,6 +9,10 @@
 #include "voxelizer/voxelizer.h"
 
 namespace monitor {
+  Mesh::Mesh() {
+    this->mesh = vx_mesh_alloc(0, 0);
+  }
+
   Mesh::Mesh(const monitor::Mesh &other) {
     vx_mesh_t *otherMesh = other.mesh;
     mesh = vx_mesh_alloc((int)otherMesh->nvertices, (int)otherMesh->nindices);

@@ -15,6 +15,7 @@ namespace monitor {
   class Mesh {
     friend std::ostream& operator<<(std::ostream& os, const Mesh& mesh);
   public:
+    Mesh();
     Mesh(const Mesh&);
     Mesh(std::vector<TVec3d> &vertics, std::vector<unsigned int> &indices);
     size_t getVerticesCount() { return this->mesh->nvertices; }

@@ -5,15 +5,34 @@
 #include "world.h"
 
 #include <iterator>
+
 #include <citygml/citymodel.h>
+#include "utils.h"
 
 namespace monitor {
-  Grids::Grids(double length[3], double resolution[3]): xSize(length[0]), ySize(length[1]), zSize(length[2]),
-                                                        xRes(resolution[0]), yRes(resolution[1]), zRes(resolution[2]) {
-    xCount = (int)(xSize / xRes);
-    yCount = (int)(ySize / yRes);
-    zCount = (int)(zSize / zRes);
+  Grids::Grids(double *length, double *resolution) {
+    xSize = length[0], ySize = length[1], zSize = length[2];
+    xRes = resolution[0], yRes = resolution[1], zRes = resolution[2];
+    invXRes = 1.0 / xRes;
+    invYRes = 1.0 / yRes;
+    invZRes = 1.0 / zRes;
+    xCount = (int)(xSize * invXRes);
+    yCount = (int)(ySize * invYRes);
+    zCount = (int)(zSize * invZRes);
     grids = new bool[xCount * yCount * zCount]();
+    lowerP = TVec3d(0.0, 0.0, 0.0);
+  }
+  Grids::Grids(double *length, double *resolution, const TVec3d &lower) {
+    xSize = length[0], ySize = length[1], zSize = length[2];
+    xRes = resolution[0], yRes = resolution[1], zRes = resolution[2];
+    invXRes = 1.0 / xRes;
+    invYRes = 1.0 / yRes;
+    invZRes = 1.0 / zRes;
+    xCount = (int)(xSize * invXRes);
+    yCount = (int)(ySize * invYRes);
+    zCount = (int)(zSize * invZRes);
+    grids = new bool[xCount * yCount * zCount]();
+    lowerP = TVec3d(lower.x, lower.y, lower.z);
   }
   Grids::~Grids() {
     delete grids;
@@ -22,6 +41,17 @@ namespace monitor {
     for(auto it = data.begin(); it != data.end(); it++) {
       grids[offset(it->x, it->y, it->z)] = true;
     }
+  }
+  int Grids::posToVoxel(double posVal, int axis) {
+    switch(axis) {
+      case 0:
+        return Clamp((int)((posVal - lowerP.x) * invXRes), 0, xCount - 1);
+      case 1:
+        return Clamp((int)((posVal - lowerP.y) * invYRes), 0, yCount - 1);
+      case 2:
+        return Clamp((int)((posVal - lowerP.z) * invZRes), 0, zCount - 1);
+    }
+    return 0;
   }
   void Grids::clear() {
     memset(grids, 0, xCount * yCount * zCount);
@@ -94,7 +124,7 @@ namespace monitor {
     const citygml::Envelope &envelope = model->getEnvelope();
     const TVec3d &lowerPoint = envelope.getLowerBound(), &upperPoint = envelope.getUpperBound();
     double length[3] = {upperPoint.x - lowerPoint.x, upperPoint.y - lowerPoint.y, upperPoint.z - lowerPoint.z};
-    Grids grids(length, resolution);
+    Grids grids(length, resolution, lowerPoint);
     return grids;
   }
   std::ostream& operator<<(std::ostream &os, const Grids& grids) {
