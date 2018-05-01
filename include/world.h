@@ -22,25 +22,26 @@ namespace monitor {
     void clear();
     // Fast Intersect Use Bresenham
     bool intersect(Voxel &src, Voxel &dst);
-    // axis: 0, 1, 2
-    // axis: x, y, z
-    int posToVoxel(double posVal, int axis);
+    Voxel posToVoxel(TVec3d &pos);
     inline bool exist(int x, int y, int z) {
       return grids[offset(x, y, z)];
+    }
+    inline bool exist(Voxel &voxel) {
+      return grids[offset(voxel.x, voxel.y, voxel.z)];
     }
     ~Grids();
   private:
     inline int offset(int x, int y, int z) const {
-      if(x >= xCount || y >= yCount || z >= zCount || x < 0 || y < 0 || z < 0)
+      if(x > gridsIndexEnd.x || y > gridsIndexEnd.y || z > gridsIndexEnd.z
+         || x < gridsIndexStart.x || y < gridsIndexStart.y || z < gridsIndexStart.z)
         return 0;
-      return z * xCount * yCount + y * xCount + x;
+      return (z - gridsIndexStart.z) * gridsCount.x * gridsCount.y
+             + (y - gridsIndexStart.y) * gridsCount.x + (x - gridsIndexStart.x);
     }
-    int xCount, yCount, zCount;
-    double xSize, ySize, zSize;
-    // Voxel Resolution
-    double xRes, yRes, zRes;
-    // invXRes = 1 / xRes
-    double invXRes, invYRes, invZRes;
+    TVec3<int> gridsCount, gridsIndexStart, gridsIndexEnd;
+    TVec3d gridsLength;
+    TVec3d res;
+    TVec3d invRes;
     TVec3d lowerP;
     bool *grids;
   };

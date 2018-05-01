@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <ctime>
 
+#define DOUBLE_ZERO 1e-4
+
 namespace monitor {
   inline int Clamp(const int value, const int low, const int high) {
     if(value <= low)
@@ -35,8 +37,14 @@ namespace monitor {
     int range = max - min;
     return (rand() / (double)RAND_MAX * range) + min;
   }
-  inline void update_random_seed() {
+  inline void UpdateRandomSeed() {
     srand(time(nullptr));
+  }
+  inline bool EQZero(const double val) {
+    return val < DOUBLE_ZERO && val > -DOUBLE_ZERO;
+  }
+  inline int RoundToInt(const double val) {
+
   }
 }
 

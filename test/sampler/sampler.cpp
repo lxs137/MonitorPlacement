@@ -68,10 +68,9 @@ namespace {
     std::vector<TVec2d> validSamples;
     validSamples.reserve(samples->size());
     for(auto it = samples->begin(); it != samples->end(); it++) {
-      int x = grids.posToVoxel(it->x, 0);
-      int y = grids.posToVoxel(it->y, 1);
-      int z = grids.posToVoxel(0.01, 2);
-      if(grids.exist(x, y, z)) {
+      TVec3d p(it->x, it->y, 0.01);
+      monitor::Voxel voxel = grids.posToVoxel(p);
+      if(grids.exist(voxel)) {
         validSamples.push_back(*it);
       }
     }

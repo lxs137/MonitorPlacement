@@ -16,7 +16,7 @@ namespace monitor {
     std::vector<TVec2d> processList;
     processList.reserve(xCellCount * yCellCount);
 
-    update_random_seed();
+    UpdateRandomSeed();
     TVec2d curPoint(RandomDouble(xStart, xEnd), RandomDouble(yStart, yEnd)), newPoint;
     cells.putSample(curPoint);
     processList.push_back(curPoint);

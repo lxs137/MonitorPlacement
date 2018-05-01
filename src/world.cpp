@@ -10,29 +10,38 @@
 #include "utils.h"
 
 namespace monitor {
-  Grids::Grids(double *length, double *resolution) {
-    xSize = length[0], ySize = length[1], zSize = length[2];
-    xRes = resolution[0], yRes = resolution[1], zRes = resolution[2];
-    invXRes = 1.0 / xRes;
-    invYRes = 1.0 / yRes;
-    invZRes = 1.0 / zRes;
-    xCount = (int)(xSize * invXRes);
-    yCount = (int)(ySize * invYRes);
-    zCount = (int)(zSize * invZRes);
-    grids = new bool[xCount * yCount * zCount]();
-    lowerP = TVec3d(0.0, 0.0, 0.0);
+  Grids::Grids(double *length, double *resolution)
+      :gridsLength(length[0], length[1], length[2]), res(resolution[0], resolution[1], resolution[2]) {
+    invRes.x = 1.0 / res.x;
+    invRes.y = 1.0 / res.y;
+    invRes.z = 1.0 / res.z;
+    gridsCount.x = (int)(gridsLength.x * invRes.x);
+    gridsCount.y = (int)(gridsLength.y * invRes.y);
+    gridsCount.z = (int)(gridsLength.z * invRes.z);
+    grids = new bool[gridsCount.x * gridsCount.y * gridsCount.z]();
+    lowerP.x = 0.0, lowerP.y = 0.0, lowerP.z = 0.0;
+    gridsIndexStart.x = 0, gridsIndexStart.y = 0, gridsIndexStart.z = 0;
+    gridsIndexEnd.x = gridsCount.x - 1, gridsIndexEnd.y = gridsCount.y - 1, gridsIndexEnd.z = gridsCount.z - 1;
   }
-  Grids::Grids(double *length, double *resolution, const TVec3d &lower) {
-    xSize = length[0], ySize = length[1], zSize = length[2];
-    xRes = resolution[0], yRes = resolution[1], zRes = resolution[2];
-    invXRes = 1.0 / xRes;
-    invYRes = 1.0 / yRes;
-    invZRes = 1.0 / zRes;
-    xCount = (int)(xSize * invXRes);
-    yCount = (int)(ySize * invYRes);
-    zCount = (int)(zSize * invZRes);
-    grids = new bool[xCount * yCount * zCount]();
-    lowerP = TVec3d(lower.x, lower.y, lower.z);
+  Grids::Grids(double *length, double *resolution, const TVec3d &lower)
+      :gridsLength(length[0], length[1], length[2]), res(resolution[0], resolution[1], resolution[2]) {
+    invRes.x = 1.0 / res.x;
+    invRes.y = 1.0 / res.y;
+    invRes.z = 1.0 / res.z;
+    gridsCount.x = (int)(gridsLength.x * invRes.x);
+    gridsCount.y = (int)(gridsLength.y * invRes.y);
+    gridsCount.z = (int)(gridsLength.z * invRes.z);
+    grids = new bool[gridsCount.x * gridsCount.y * gridsCount.z]();
+    for(int i = 0; i < 3; i++) {
+      lowerP.xyz[i] = lower.xyz[i];
+      if(!EQZero(lower.xyz[i])) {
+        gridsIndexStart.xyz[i] = (int)(lower.xyz[i] * invRes.xyz[i]);
+        gridsIndexEnd.xyz[i] = gridsCount.xyz[i] + gridsIndexStart.xyz[i] - 1;
+      } else {
+        gridsIndexStart.xyz[i] = 0;
+        gridsIndexEnd.xyz[i] = gridsCount.xyz[i] - 1;
+      }
+    }
   }
   Grids::~Grids() {
     delete grids;
@@ -42,19 +51,15 @@ namespace monitor {
       grids[offset(it->x, it->y, it->z)] = true;
     }
   }
-  int Grids::posToVoxel(double posVal, int axis) {
-    switch(axis) {
-      case 0:
-        return Clamp((int)((posVal - lowerP.x) * invXRes), 0, xCount - 1);
-      case 1:
-        return Clamp((int)((posVal - lowerP.y) * invYRes), 0, yCount - 1);
-      case 2:
-        return Clamp((int)((posVal - lowerP.z) * invZRes), 0, zCount - 1);
-    }
-    return 0;
+  Voxel Grids::posToVoxel(TVec3d &pos) {
+    int x = Clamp((int)(pos.x * invRes.x), gridsIndexStart.x, gridsCount.x - 1),
+        y = Clamp((int)(pos.y * invRes.y), gridsIndexStart.y, gridsCount.y - 1),
+        z = Clamp((int)(pos.z * invRes.z), gridsIndexStart.z, gridsCount.z - 1);
+    Voxel voxel(x, y, z);
+    return voxel;
   }
   void Grids::clear() {
-    memset(grids, 0, xCount * yCount * zCount);
+    memset(grids, 0, gridsCount.x * gridsCount.y * gridsCount.z);
   }
   bool Grids::intersect(monitor::Voxel &src, monitor::Voxel &dst) {
     Voxel point(src.x, src.y, src.z);
@@ -129,12 +134,12 @@ namespace monitor {
   }
   std::ostream& operator<<(std::ostream &os, const Grids& grids) {
     os << "Grdis: " << std::endl;
-    os << " Size: " << grids.xSize << " " << grids.ySize << " " << grids.zSize << std::endl;
-    os << " Grids Count: " << grids.xCount << " " << grids.yCount << " " << grids.zCount << std::endl;
+    os << " Length: " << grids.gridsLength << std::endl;
+    os << " Grids Count: " << grids.gridsCount << std::endl;
     unsigned long count = 0;
-    for(int i = 0; i < grids.xCount; i++) {
-      for(int j = 0; j < grids.yCount; j++) {
-        for(int k = 0; k < grids.zCount; k++) {
+    for(int i = grids.gridsIndexStart.x; i < grids.gridsIndexEnd.x; i++) {
+      for(int j = grids.gridsIndexStart.y; j < grids.gridsIndexEnd.y; j++) {
+        for(int k = grids.gridsIndexStart.z; k < grids.gridsIndexEnd.z; k++) {
           if(grids.grids[grids.offset(i, j, k)]) {
 //            os << " (" << i << ", " << j << ", " << k << ") ";
             count++;
