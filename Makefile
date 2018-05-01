@@ -49,6 +49,7 @@ clean :
 	rm -rf $(TEST_TARGET_DIR)
 	rm -f $(BIN)
 	rm -f $(TEST_BIN)
+	rm -rf $(TEST_BIN).dSYM
 .PHONY : clean
 
 test-parser : dir $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN)
@@ -59,7 +60,7 @@ test-sampler : dir $(TEST_TARGET_DIR)/sampler/sampler.test.o $(OBJS_EXCLUDE_MAIN
 	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/sampler/sampler.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
 
 memcheck : test-parser
-	valgrind --tool=memcheck --leak-check=full $(TEST_BIN)
+	valgrind --tool=memcheck --leak-check=full ./$(TEST_BIN)
 .PHONY : memcheck
 
 deploy : clean

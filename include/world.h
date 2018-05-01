@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <memory>
+#include <climits>
 
 #include <citygml/vecs.hpp>
 #include <citygml/citymodel.h>
@@ -21,7 +22,7 @@ namespace monitor {
     void addVoxels(std::vector<Voxel>& data);
     void clear();
     // Fast Intersect Use Bresenham
-    bool intersect(Voxel &src, Voxel &dst);
+    bool intersect(Voxel &src, Voxel &dst, int maxStep = INT_MAX);
     Voxel posToVoxel(TVec3d &pos);
     inline bool exist(int x, int y, int z) {
       return grids[offset(x, y, z)];

@@ -61,7 +61,7 @@ namespace monitor {
   void Grids::clear() {
     memset(grids, 0, gridsCount.x * gridsCount.y * gridsCount.z);
   }
-  bool Grids::intersect(monitor::Voxel &src, monitor::Voxel &dst) {
+  bool Grids::intersect(monitor::Voxel &src, monitor::Voxel &dst, int maxStep) {
     Voxel point(src.x, src.y, src.z);
     int dx = dst.x - src.x, dy = dst.y - src.y, dz = dst.z - src.z;
     int x_inc = (dx < 0) ? -1 : 1, y_inc = (dy < 0) ? -1 : 1, z_inc = (dz < 0) ? -1 : 1;
@@ -72,7 +72,8 @@ namespace monitor {
       int err_1 = dy2 - l;
       int err_2 = dz2 - l;
       for (int i = 0; i < l; i++) {
-        if(grids[offset(point.x, point.y, point.z)])
+        maxStep--;
+        if(grids[offset(point.x, point.y, point.z)] && maxStep >= 0)
           return true;
         if (err_1 > 0) {
           point.y += y_inc;
@@ -90,7 +91,8 @@ namespace monitor {
       int err_1 = dx2 - m;
       int err_2 = dz2 - m;
       for (int i = 0; i < m; i++) {
-        if(grids[offset(point.x, point.y, point.z)])
+        maxStep--;
+        if(grids[offset(point.x, point.y, point.z)] && maxStep >= 0)
           return true;
         if (err_1 > 0) {
           point.x += x_inc;
@@ -108,7 +110,8 @@ namespace monitor {
       int err_1 = dy2 - n;
       int err_2 = dx2 - n;
       for (int i = 0; i < n; i++) {
-        if(grids[offset(point.x, point.y, point.z)])
+        maxStep--;
+        if(grids[offset(point.x, point.y, point.z)] && maxStep >= 0)
           return true;
         if (err_1 > 0) {
           point.y += y_inc;
@@ -123,7 +126,7 @@ namespace monitor {
         point.z += z_inc;
       }
     }
-    return grids[offset(point.x, point.y, point.z)];
+    return grids[offset(point.x, point.y, point.z)] && maxStep >= 0;
   }
   Grids cityModelToGrids(std::shared_ptr<const citygml::CityModel> model, double resolution[3]) {
     const citygml::Envelope &envelope = model->getEnvelope();
