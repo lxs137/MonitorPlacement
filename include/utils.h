@@ -7,7 +7,10 @@
 
 #include <stdlib.h>
 #include <ctime>
+#include <cmath>
 
+#define PI 3.14
+#define RADIAN_TO_DEGREE 57.31
 #define DOUBLE_ZERO 1e-4
 
 namespace monitor {
@@ -43,8 +46,14 @@ namespace monitor {
   inline bool EQZero(const double val) {
     return val < DOUBLE_ZERO && val > -DOUBLE_ZERO;
   }
-  inline int RoundToInt(const double val) {
-
+  inline double atanDegree(const double val) {
+    return std::atan(val) * RADIAN_TO_DEGREE;
+  }
+  inline double asinDegree(const double val) {
+    return std::asin(val) * RADIAN_TO_DEGREE;
+  }
+  inline double distance3D(const double dx, const double dy, const double dz) {
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
   }
 }
 

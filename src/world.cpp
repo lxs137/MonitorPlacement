@@ -51,7 +51,7 @@ namespace monitor {
       grids[offset(it->x, it->y, it->z)] = true;
     }
   }
-  Voxel Grids::posToVoxel(TVec3d &pos) {
+  Voxel Grids::posToVoxel(const TVec3d &pos) {
     int x = Clamp((int)(pos.x * invRes.x), gridsIndexStart.x, gridsCount.x - 1),
         y = Clamp((int)(pos.y * invRes.y), gridsIndexStart.y, gridsCount.y - 1),
         z = Clamp((int)(pos.z * invRes.z), gridsIndexStart.z, gridsCount.z - 1);
@@ -61,7 +61,12 @@ namespace monitor {
   void Grids::clear() {
     memset(grids, 0, gridsCount.x * gridsCount.y * gridsCount.z);
   }
-  bool Grids::intersect(monitor::Voxel &src, monitor::Voxel &dst, int maxStep) {
+  bool Grids::intersect(const Voxel &src, const Voxel &dst, double maxDis) {
+    int maxStep;
+    if(maxDis < 0)
+      maxStep = INT_MAX;
+    else
+      maxStep = (int)(maxDis * invRes.x);
     Voxel point(src.x, src.y, src.z);
     int dx = dst.x - src.x, dy = dst.y - src.y, dz = dst.z - src.z;
     int x_inc = (dx < 0) ? -1 : 1, y_inc = (dy < 0) ? -1 : 1, z_inc = (dz < 0) ? -1 : 1;
@@ -128,29 +133,30 @@ namespace monitor {
     }
     return grids[offset(point.x, point.y, point.z)] && maxStep >= 0;
   }
-  Grids cityModelToGrids(std::shared_ptr<const citygml::CityModel> model, double resolution[3]) {
-    const citygml::Envelope &envelope = model->getEnvelope();
-    const TVec3d &lowerPoint = envelope.getLowerBound(), &upperPoint = envelope.getUpperBound();
-    double length[3] = {upperPoint.x - lowerPoint.x, upperPoint.y - lowerPoint.y, upperPoint.z - lowerPoint.z};
-    Grids grids(length, resolution, lowerPoint);
-    return grids;
-  }
-  std::ostream& operator<<(std::ostream &os, const Grids& grids) {
-    os << "Grdis: " << std::endl;
-    os << " Length: " << grids.gridsLength << std::endl;
-    os << " Grids Count: " << grids.gridsCount << std::endl;
-    unsigned long count = 0;
-    for(int i = grids.gridsIndexStart.x; i < grids.gridsIndexEnd.x; i++) {
-      for(int j = grids.gridsIndexStart.y; j < grids.gridsIndexEnd.y; j++) {
-        for(int k = grids.gridsIndexStart.z; k < grids.gridsIndexEnd.z; k++) {
-          if(grids.grids[grids.offset(i, j, k)]) {
-//            os << " (" << i << ", " << j << ", " << k << ") ";
+  size_t Grids::getDatagridCount() const {
+    size_t count = 0;
+    for(int i = gridsIndexStart.x; i < gridsIndexEnd.x; i++) {
+      for(int j = gridsIndexStart.y; j < gridsIndexEnd.y; j++) {
+        for(int k = gridsIndexStart.z; k < gridsIndexEnd.z; k++) {
+          if(grids[offset(i, j, k)]) {
             count++;
           }
         }
       }
     }
-    os << "\n Data Grids Count: " << count << std::endl;
+    return count;
+  }
+  std::shared_ptr<Grids> cityModelToGrids(std::shared_ptr<const citygml::CityModel> model, double resolution[3]) {
+    const citygml::Envelope &envelope = model->getEnvelope();
+    const TVec3d &lowerPoint = envelope.getLowerBound(), &upperPoint = envelope.getUpperBound();
+    double length[3] = {upperPoint.x - lowerPoint.x, upperPoint.y - lowerPoint.y, upperPoint.z - lowerPoint.z};
+    return std::make_shared<Grids>(length, resolution, lowerPoint);
+  }
+  std::ostream& operator<<(std::ostream &os, const Grids& grids) {
+    os << "Grdis: " << std::endl;
+    os << " Length: " << grids.gridsLength << std::endl;
+    os << " Grids Count: " << grids.gridsCount << std::endl;
+    os << " Data Grids Count: " << grids.getDatagridCount() << std::endl;
     return os;
   }
 }

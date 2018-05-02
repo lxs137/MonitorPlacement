@@ -22,7 +22,7 @@ namespace {
   public:
     static void SetUpTestCase() {
       citygml::ParserParams params;
-//      city = citygml::load("./data/LOD3_1.gml", params);
+//      road = citygml::load("./data/LOD3_1.gml", params);
       city = citygml::load("./data/Road-LOD0.gml", params);
       std::cout << "CityModel: " << city->getEnvelope() << std::endl;
     }
@@ -77,18 +77,18 @@ namespace {
     monitor::Mesh mesh1 = monitor::parseMeshFromCityObject(object1),
         mesh2 = monitor::parseMeshFromCityObject(object2), mesh3(mesh1);
     mesh3.merge(mesh2);
-    monitor::Grids world = monitor::cityModelToGrids(CityObjectParserTest::city, resolution);
+    std::shared_ptr<monitor::Grids> world = monitor::cityModelToGrids(CityObjectParserTest::city, resolution);
     std::vector<monitor::Voxel> voxels1, voxels2, voxels3;
     mesh1.voxelizer(voxels1, resolution);
     mesh2.voxelizer(voxels2, resolution);
     mesh3.voxelizer(voxels3, resolution);
     std::cout << voxels1.size() << " " << voxels2.size() << " " << voxels3.size() << std::endl;
-    world.addVoxels(voxels1);
-    world.addVoxels(voxels2);
-    std::cout << world << std::endl;
-    world.clear();
-    world.addVoxels(voxels3);
-    std::cout<< world << std::endl;
+    world->addVoxels(voxels1);
+    world->addVoxels(voxels2);
+    std::cout << *world << std::endl;
+    world->clear();
+    world->addVoxels(voxels3);
+    std::cout<< *world << std::endl;
     EXPECT_EQ(voxels1.size() + voxels2.size(), voxels3.size());
   }
 
@@ -99,7 +99,7 @@ namespace {
     mesh.writeToFile("./data/Road.obj");
 //    std::vector<monitor::Voxel> voxels;
 //    mesh.voxelizer(voxels, resolution);
-//    monitor::Grids world = monitor::cityModelToGrids(CityObjectParserTest::city, resolution);
+//    monitor::Grids world = monitor::cityModelToGrids(CityObjectParserTest::road, resolution);
 //    world.addVoxels(voxels);
 //    std::cout << world << std::endl;
   }

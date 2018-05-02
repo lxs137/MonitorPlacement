@@ -1,5 +1,6 @@
 #include "parser.h"
 
+#include <iostream>
 #include <memory>
 #include <vector>
 #include <cmath>
@@ -8,8 +9,7 @@
 #include <citygml/polygon.h>
 #include <citygml/vecs.hpp>
 #include "voxelizer/mesh.h"
-
-#define EQUAL(a,b) (a-b<1e-4)&&(b-a<1e-4)
+#include "utils.h"
 
 namespace monitor {
 
@@ -40,6 +40,14 @@ Mesh parseMeshFromCityObject(const citygml::CityObject* object) {
   return mesh;
 }
 
+Mesh parseMeshFromCityObjectRecursive(const citygml::CityObject* object) {
+  Mesh mesh = parseMeshFromCityObject(object);
+  for (unsigned int i = 0; i < object->getChildCityObjectsCount(); i++) {
+    mesh.merge(parseMeshFromCityObjectRecursive(&object->getChildCityObject(i)));
+  }
+  return mesh;
+}
+
 Mesh parseMeshFromCityObjects(const std::vector<const citygml::CityObject*> &objects) {
   Mesh mesh;
   if(objects.size() == 0) {
@@ -57,7 +65,7 @@ void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, st
   const std::vector<unsigned int> &indices = polygon->getIndices();
   const TVec3d &v1 = vertices.front();
   const TVec3d &v2 = vertices.back();
-  bool isRing = EQUAL(v1.x, v2.x) && EQUAL(v1.y, v2.y) && EQUAL(v1.z, v2.z);
+  bool isRing = EQZero(v1.x - v2.x) && EQZero(v1.y - v2.y) && EQZero(v1.z - v2.z);
   unsigned int indiceOffset = (unsigned int)allVertices.size();
 
   if(isRing) {

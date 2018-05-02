@@ -47,9 +47,11 @@ INCLUDE_DIRECTORIES(${GTEST_INCLUDE})
 
 ADD_EXECUTABLE(unittest-parser ${UNITTEST_DIR}/parser.cpp)
 ADD_EXECUTABLE(unittest-sampler ${UNITTEST_DIR}/sampler/sampler.cpp)
+ADD_EXECUTABLE(unittest-camera ${UNITTEST_DIR}/camera.cpp)
 
 TARGET_LINK_LIBRARIES(unittest-parser ${GTEST_LIBRARY} parser_lib)
 TARGET_LINK_LIBRARIES(unittest-sampler ${GTEST_LIBRARY} parser_lib)
+TARGET_LINK_LIBRARIES(unittest-camera ${GTEST_LIBRARY} parser_lib)
 #
 #add_test(NAME that-test-I-made COMMAND unittest)
 #

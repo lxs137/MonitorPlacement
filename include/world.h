@@ -17,13 +17,15 @@ namespace monitor {
   class Grids {
     friend std::ostream& operator<<(std::ostream &os, const Grids& grids);
   public:
+    Grids() {};
     Grids(double length[3], double resolution[3], const TVec3d &lower);
     Grids(double length[3], double resolution[3]);
     void addVoxels(std::vector<Voxel>& data);
     void clear();
     // Fast Intersect Use Bresenham
-    bool intersect(Voxel &src, Voxel &dst, int maxStep = INT_MAX);
-    Voxel posToVoxel(TVec3d &pos);
+    bool intersect(const Voxel &src, const Voxel &dst, double maxDis = -1.0);
+    Voxel posToVoxel(const TVec3d &pos);
+    size_t getDatagridCount() const;
     inline bool exist(int x, int y, int z) {
       return grids[offset(x, y, z)];
     }
@@ -47,7 +49,7 @@ namespace monitor {
     bool *grids;
   };
   std::ostream& operator<<(std::ostream &os, const Grids& grids);
-  Grids cityModelToGrids(std::shared_ptr<const citygml::CityModel> model, double resolution[3]);
+  std::shared_ptr<Grids> cityModelToGrids(std::shared_ptr<const citygml::CityModel> model, double resolution[3]);
 }
 
 #endif //WORLD_H_

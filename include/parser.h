@@ -12,6 +12,8 @@ namespace monitor {
 
   Mesh parseMeshFromCityObject(const citygml::CityObject* object);
 
+  Mesh parseMeshFromCityObjectRecursive(const citygml::CityObject* object);
+
   Mesh parseMeshFromCityObjects(const std::vector<const citygml::CityObject*> &objects);
 
   void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, std::vector<TVec3d> &allVertices,

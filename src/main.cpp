@@ -76,7 +76,7 @@ int main( int argc, char **argv )
 #if 0
     std::ifstream file;
     file.open( argv[fargc], std::ifstream::in );
-     std::shared_ptr<const citygml::CityModel> city = citygml::load( file, params );
+     std::shared_ptr<const citygml::CityModel> road = citygml::load( file, params );
 #else
 
     std::shared_ptr<const citygml::CityModel> city;
@@ -97,8 +97,8 @@ int main( int argc, char **argv )
     if ( log )
     {
         // std::cout << std::endl << "Objects hierarchy:" << std::endl;
-        // const citygml::ConstCityObjects& roots = city->getRootCityObjects();
-        // std::cout << "Envelope: " << city->getEnvelope() << std::endl;
+        // const citygml::ConstCityObjects& roots = road->getRootCityObjects();
+        // std::cout << "Envelope: " << road->getEnvelope() << std::endl;
         std::vector<const citygml::CityObject*> parser_result = city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Window);
         for(auto it = parser_result.begin(); it != parser_result.end(); it++) {
             monitor::printCityObject(*it);

@@ -54,12 +54,17 @@ clean :
 
 test-parser : dir $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN)
 	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/parser.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
-.PHONY : test
+.PHONY : test-parser
 
 test-sampler : dir $(TEST_TARGET_DIR)/sampler/sampler.test.o $(OBJS_EXCLUDE_MAIN)
 	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/sampler/sampler.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
+.PHONY : test-sampler
 
-memcheck : test-parser
+test-camera : dir $(TEST_TARGET_DIR)/camera.test.o $(OBJS_EXCLUDE_MAIN)
+	$(CC) $(LDFLAGS) $(TEST_TARGET_DIR)/camera.test.o $(OBJS_EXCLUDE_MAIN) $(GTEST_OBJ) -o $(TEST_BIN)
+.PHONY : test-camera
+
+memcheck : test-camera
 	valgrind --tool=memcheck --leak-check=full ./$(TEST_BIN)
 .PHONY : memcheck
 
@@ -75,6 +80,7 @@ help :
 	@echo "... clean"
 	@echo "... test-parser"
 	@echo "... test-sampler"
+	@echo "... test-camera"
 	@echo "... memcheck"
 	@echo "... tag=\"\" deploy"
 .PHONY : help
