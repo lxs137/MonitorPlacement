@@ -24,7 +24,7 @@ ifndef tag
 tag = $(shell date +%Y/%m/%d-%R)
 endif
 
-default_target: all
+default_target: help
 .PHONY : default_target
 
 $(TARGET_DIR)/%.o : $(SRC_DIR)/%.cpp $(HEADERS)
@@ -68,6 +68,10 @@ memcheck : test-camera
 	valgrind --tool=memcheck --leak-check=full ./$(TEST_BIN)
 .PHONY : memcheck
 
+stats :
+	find $(TEST_DIR) $(SRC_DIR) $(INCLUDE_DIR) -name "*.cpp" -o -name "*.h" | xargs wc -l
+.PHONY : stats
+
 deploy : clean
 	git add .
 	git commit -m "$(tag)"
@@ -75,12 +79,13 @@ deploy : clean
 .PHONY : deploy
 
 help :
-	@echo "The following are some of the valid targets for this Makefile:"
+	@echo "Some Valid Targets For This Makefile:"
 	@echo "... all"
 	@echo "... clean"
 	@echo "... test-parser"
 	@echo "... test-sampler"
 	@echo "... test-camera"
 	@echo "... memcheck"
+	@echo "... stats"
 	@echo "... tag=\"\" deploy"
 .PHONY : help

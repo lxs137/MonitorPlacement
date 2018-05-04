@@ -12,11 +12,12 @@
 #include <gtest/gtest.h>
 #include "world.h"
 #include "parser.h"
+#include "camera_chooser.h"
 #include "sampler/sampler.h"
 
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
-  double cameraMinDis = resolution[0] * 30;
+  double cameraMinDis = resolution[0] * 20;
   double cameraHeight = 5;
   std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
 
@@ -37,7 +38,6 @@ namespace {
       cityMesh.voxelizer(cityVoxels, resolution);
       worldGrids = monitor::cityModelToGrids(CameraMonitorTest::city, resolution);
       worldGrids->addVoxels(cityVoxels);
-      std::cout << "CityGrids: " << *worldGrids << std::endl;
     }
     static void TearDownTestCase() {
       road.reset();
@@ -73,7 +73,6 @@ namespace {
       const std::vector<const citygml::CityObject*> targets = CameraMonitorTest::city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Door);
       monitor::Mesh targetMesh = monitor::parseMeshFromCityObjects(targets);
       targetMesh.voxelizer(targetVoxels, resolution);
-      std::cout << "TargetVoxels:" << targetVoxels.size() << std::endl;
 
       CameraMonitorTest::worldGrids->removeVoxels(targetVoxels);
 
@@ -100,24 +99,30 @@ namespace {
     gridsPtr->intersect(src, target);
   }
 
-  TEST_F(CameraMonitorTest, INTEGRATION) {
+  TEST_F(CameraMonitorTest, CALCULATE_VIEW) {
     EXPECT_GT(validSamples.size(), 0);
 
     std::vector<monitor::Camera> cameras;
     cameras.reserve(validSamples.size());
     for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
       TVec3d cameraPos(it->x, it->y, cameraHeight);
-      cameras.emplace_back(worldGrids, cameraPos, 30.0, -20.0);
+      cameras.emplace_back(worldGrids, cameraPos, 0.0, -20.0);
     }
 
     size_t targetCount = targetVoxels.size(), cameraCount = cameras.size();
     // Allocate Memory
+    bool *data = new bool[targetCount * cameraCount]();
     bool **view = new bool*[targetCount];
     for(size_t i = 0; i < targetCount; i++)
-      view[i] = new bool[cameraCount]();
+      view[i] = &data[i * cameraCount];
 
     size_t *countPerCamera = new size_t[cameraCount]();
     size_t *countPerTarget = new size_t[targetCount]();
+
+    for(size_t i = 0; i < cameraCount; i++) {
+      cameras[i].findBestPhiH(targetVoxels);
+    }
+
     for(size_t i = 0; i < targetCount; i++) {
       for(size_t j = 0; j < cameraCount; j++) {
         view[i][j] = cameras[j].canMonitor(targetVoxels[i]);
@@ -128,19 +133,10 @@ namespace {
       }
     }
 
-    size_t targetInWorldCount = 0;
-    for(size_t i = 0; i < targetCount; i++) {
-      if(worldGrids->exist(targetVoxels[i])) {
-        targetInWorldCount++;
-//        std::cout << "Target(" << targetVoxels[i] << ") Is In World" << std::endl;
-      }
+    for(size_t i = 0; i < cameraCount; i++) {
+      double rate = (double)countPerCamera[i] / targetCount;
+      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
     }
-    std::cout << "Target In World: " << targetInWorldCount << std::endl;
-
-//    for(size_t i = 0; i < cameraCount; i++) {
-//      double rate = (double)countPerCamera[i] / targetCount;
-//      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
-//    }
 
     size_t notMonitored = 0;
     for(size_t i = 0; i < targetCount; i++) {
@@ -149,14 +145,19 @@ namespace {
     }
     std::cout << "Not Be Monitored: " << notMonitored << std::endl;
 
-    std::cout << "CityGrids: " << *worldGrids << std::endl;
+//    std::cout << "CityGrids: " << *worldGrids << std::endl;
     std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount << std::endl;
+
+    std::vector<monitor::Camera> preChooseCameras;
+    monitor::preChooseGreedy(cameras, preChooseCameras, view, targetCount, 15);
+    for(auto it = preChooseCameras.begin(); it != preChooseCameras.end(); it++) {
+      std::cout << *it << std::endl;
+    }
 
     delete[] countPerCamera;
     delete[] countPerTarget;
     // Free Memory
-    for(size_t i = 0; i < targetCount; i++)
-      delete[] view[i];
+    delete[] view[0];
     delete[] view;
   }
 }
@@ -167,7 +168,7 @@ int main(int argc, char **argv) {
     ::testing::GTEST_FLAG(filter) = argv[1];
   } else {
 //    ::testing::GTEST_FLAG(filter) = "*INTERSECT_TEST*";
-    ::testing::GTEST_FLAG(filter) = "*INTEGRATION*";
+    ::testing::GTEST_FLAG(filter) = "*CALCULATE_VIEW*";
   }
   return RUN_ALL_TESTS();
 }
