@@ -16,8 +16,9 @@
 
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
-  double cameraMinDis = resolution[0] * 25;
+  double cameraMinDis = resolution[0] * 30;
   double cameraHeight = 5;
+  std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
 
   class CameraMonitorTest : public ::testing::Test {
   public:
@@ -31,6 +32,7 @@ namespace {
       for(size_t i = 0; i < roots.size(); i++) {
         cityMesh.merge(monitor::parseMeshFromCityObjectRecursive(roots[i]));
       }
+
       std::vector<monitor::Voxel> cityVoxels;
       cityMesh.voxelizer(cityVoxels, resolution);
       worldGrids = monitor::cityModelToGrids(CameraMonitorTest::city, resolution);
@@ -73,6 +75,8 @@ namespace {
       targetMesh.voxelizer(targetVoxels, resolution);
       std::cout << "TargetVoxels:" << targetVoxels.size() << std::endl;
 
+      CameraMonitorTest::worldGrids->removeVoxels(targetVoxels);
+
     }
     virtual void TearDown() {
       validSamples.clear();
@@ -91,6 +95,11 @@ namespace {
   std::shared_ptr<const citygml::CityModel> CameraMonitorTest::city = nullptr;
   std::shared_ptr<monitor::Grids> CameraMonitorTest::worldGrids = nullptr;
 
+  TEST_F(CameraMonitorTest, INTERSECT_TEST) {
+    monitor::Voxel src(-6,125,10), target(160, 209, 3);
+    gridsPtr->intersect(src, target);
+  }
+
   TEST_F(CameraMonitorTest, INTEGRATION) {
     EXPECT_GT(validSamples.size(), 0);
 
@@ -98,7 +107,7 @@ namespace {
     cameras.reserve(validSamples.size());
     for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
       TVec3d cameraPos(it->x, it->y, cameraHeight);
-      cameras.emplace_back(worldGrids, cameraPos, 0.0, 0.0);
+      cameras.emplace_back(worldGrids, cameraPos, 30.0, -20.0);
     }
 
     size_t targetCount = targetVoxels.size(), cameraCount = cameras.size();
@@ -107,25 +116,44 @@ namespace {
     for(size_t i = 0; i < targetCount; i++)
       view[i] = new bool[cameraCount]();
 
-    size_t *countArr = new size_t[cameraCount]();
+    size_t *countPerCamera = new size_t[cameraCount]();
+    size_t *countPerTarget = new size_t[targetCount]();
     for(size_t i = 0; i < targetCount; i++) {
       for(size_t j = 0; j < cameraCount; j++) {
         view[i][j] = cameras[j].canMonitor(targetVoxels[i]);
         if(view[i][j]) {
-          countArr[j]++;
-//          std::cout << "("<< cameras[j] << ") (" << targetVoxels[i] << ")" <<std::endl;
+          countPerCamera[j]++;
+          countPerTarget[i]++;
         }
       }
     }
 
-    for(size_t i = 0; i < cameraCount; i++) {
-      std::cout << "View Rate: " << std::fixed << (double)countArr[i] / targetCount << std::endl;
+    size_t targetInWorldCount = 0;
+    for(size_t i = 0; i < targetCount; i++) {
+      if(worldGrids->exist(targetVoxels[i])) {
+        targetInWorldCount++;
+//        std::cout << "Target(" << targetVoxels[i] << ") Is In World" << std::endl;
+      }
     }
+    std::cout << "Target In World: " << targetInWorldCount << std::endl;
 
-//    std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount
-//              << " ViewCount: " << count << std::endl;
+//    for(size_t i = 0; i < cameraCount; i++) {
+//      double rate = (double)countPerCamera[i] / targetCount;
+//      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
+//    }
 
-    delete[] countArr;
+    size_t notMonitored = 0;
+    for(size_t i = 0; i < targetCount; i++) {
+      if(countPerTarget[i] == 0)
+        notMonitored++;
+    }
+    std::cout << "Not Be Monitored: " << notMonitored << std::endl;
+
+    std::cout << "CityGrids: " << *worldGrids << std::endl;
+    std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount << std::endl;
+
+    delete[] countPerCamera;
+    delete[] countPerTarget;
     // Free Memory
     for(size_t i = 0; i < targetCount; i++)
       delete[] view[i];
@@ -138,6 +166,7 @@ int main(int argc, char **argv) {
   if(argc > 1) {
     ::testing::GTEST_FLAG(filter) = argv[1];
   } else {
+//    ::testing::GTEST_FLAG(filter) = "*INTERSECT_TEST*";
     ::testing::GTEST_FLAG(filter) = "*INTEGRATION*";
   }
   return RUN_ALL_TESTS();

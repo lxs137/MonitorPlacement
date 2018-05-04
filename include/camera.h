@@ -13,11 +13,12 @@
 
 namespace monitor {
   // Degree
-  const double CAMERA_THETA_V = 60;
+  const double CAMERA_THETA_V = 60.0;
   const double CAMERA_THETA_V_HALF = 0.5 * CAMERA_THETA_V;
-  const double CAMERA_THETA_H = 100;
+  const double CAMERA_THETA_H = 100.0;
   const double CAMERA_THETA_H_HALF = 0.5 * CAMERA_THETA_H;
-  const double CAMERA_VIEW_DIS = 15;
+  const double CAMERA_VIEW_DIS = 15.0;
+  const double CAMERA_VIEW_DIS_SQUARE = CAMERA_VIEW_DIS * CAMERA_VIEW_DIS;
 
   class Camera {
     friend std::ostream& operator<<(std::ostream &os, const Camera &camera);

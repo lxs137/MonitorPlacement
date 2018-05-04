@@ -13,8 +13,18 @@
 #define RADIAN_TO_DEGREE 57.31
 #define DOUBLE_ZERO 1e-4
 
+//#define DEBUG
+
 namespace monitor {
   inline int Clamp(const int value, const int low, const int high) {
+    if(value <= low)
+      return low;
+    else if(value >= high)
+      return high;
+    else
+      return value;
+  }
+  inline double Clamp(const double value, const double low, const double high) {
     if(value <= low)
       return low;
     else if(value >= high)

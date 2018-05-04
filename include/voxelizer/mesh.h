@@ -17,10 +17,12 @@ namespace monitor {
   public:
     Mesh();
     Mesh(const Mesh&);
+    Mesh(const vx_mesh_t* mesh);
     Mesh(std::vector<TVec3d> &vertics, std::vector<unsigned int> &indices);
     size_t getVerticesCount() { return this->mesh->nvertices; }
     size_t getIndicesCount() { return this->mesh->nindices; }
     void voxelizer(std::vector<Voxel> &voxels, double resolution[3]);
+    std::shared_ptr<Mesh> voxelizerToMesh(double resolution[3]);
     void merge(const Mesh&);
     void writeToFile(std::string filename);
     ~Mesh();

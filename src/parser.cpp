@@ -43,7 +43,8 @@ Mesh parseMeshFromCityObject(const citygml::CityObject* object) {
 Mesh parseMeshFromCityObjectRecursive(const citygml::CityObject* object) {
   Mesh mesh = parseMeshFromCityObject(object);
   for (unsigned int i = 0; i < object->getChildCityObjectsCount(); i++) {
-    mesh.merge(parseMeshFromCityObjectRecursive(&object->getChildCityObject(i)));
+//    mesh.merge(parseMeshFromCityObjectRecursive(&object->getChildCityObject(i)));
+    mesh.merge(parseMeshFromCityObject(&object->getChildCityObject(i)));
   }
   return mesh;
 }

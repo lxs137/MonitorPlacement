@@ -12,17 +12,22 @@ namespace monitor {
     pos = world->posToVoxel(position);
   }
   bool Camera::canMonitor(const monitor::Voxel &target) {
-    // Test Distance And No Blocking
-    if(!world->intersect(pos, target, CAMERA_VIEW_DIS)) {
+    // Test No Blocking
+    if(world->intersect(pos, target)) {
+      return false;
+    }
+    int dx = target.x - pos.x, dy = target.y - pos.y, dz = target.z - pos.z;
+    // Test Out Of View
+    if(distance3D(dx, dy, dx) >= CAMERA_VIEW_DIS_SQUARE) {
       return false;
     }
     // Test Whether Target In Camera's FOV
-    int dx = target.x - pos.x, dy = target.y - pos.y, dz = target.z - pos.z;
     double hDegree = atanDegree((double)dx / dy);
     if(!(hDegree >= phiH - CAMERA_THETA_H_HALF && hDegree <= phiH + CAMERA_THETA_H_HALF))
       return false;
     double vDegree = asinDegree(dz / distance3D(dx, dy, dz));
-    return (vDegree >= phiV - CAMERA_THETA_V_HALF && vDegree <= phiV + CAMERA_THETA_V_HALF);
+    bool result = (vDegree >= phiV - CAMERA_THETA_V_HALF && vDegree <= phiV + CAMERA_THETA_V_HALF);
+    return result;
   }
 
   std::ostream& operator<<(std::ostream &os, const Camera &camera) {

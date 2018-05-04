@@ -20,6 +20,12 @@ namespace monitor {
     memcpy(mesh->indices, otherMesh->indices, sizeof(unsigned int) * otherMesh->nindices);
   }
 
+  Mesh::Mesh(const vx_mesh_t *otherMesh) {
+    mesh = vx_mesh_alloc((int)otherMesh->nvertices, (int)otherMesh->nindices);
+    memcpy(mesh->vertices, otherMesh->vertices, sizeof(vx_vertex_t) * otherMesh->nvertices);
+    memcpy(mesh->indices, otherMesh->indices, sizeof(unsigned int) * otherMesh->nindices);
+  }
+
   Mesh::Mesh(std::vector<TVec3d> &vertics, std::vector<unsigned int> &indices) {
     this->mesh = vx_mesh_alloc((int)vertics.size(), (int)indices.size());
     memcpy(this->mesh->indices, indices.data(), sizeof(unsigned int) * indices.size());
@@ -48,6 +54,16 @@ namespace monitor {
     }
     voxels.insert(voxels.end(), resultVoxel.begin(), resultVoxel.end());
     vx_point_cloud_free(result);
+  }
+
+  std::shared_ptr<Mesh> Mesh::voxelizerToMesh(double *resolution) {
+    float precF = resolution[0] * 0.1f;
+    vx_mesh_t* result;
+    result = vx_voxelize(this->mesh, resolution[0], resolution[1], resolution[2], precF);
+    std::shared_ptr<Mesh> newMesh = std::make_shared<Mesh>(result);
+    vx_mesh_free(result);
+    result = nullptr;
+    return newMesh;
   }
 
   void Mesh::merge(const monitor::Mesh& that) {

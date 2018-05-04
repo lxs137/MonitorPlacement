@@ -20,6 +20,7 @@ namespace monitor {
     gridsCount.z = (int)(gridsLength.z * invRes.z);
     grids = new bool[gridsCount.x * gridsCount.y * gridsCount.z]();
     lowerP.x = 0.0, lowerP.y = 0.0, lowerP.z = 0.0;
+    upperP.x = length[0], upperP.y = length[1], upperP.z = length[2];
     gridsIndexStart.x = 0, gridsIndexStart.y = 0, gridsIndexStart.z = 0;
     gridsIndexEnd.x = gridsCount.x - 1, gridsIndexEnd.y = gridsCount.y - 1, gridsIndexEnd.z = gridsCount.z - 1;
   }
@@ -34,6 +35,7 @@ namespace monitor {
     grids = new bool[gridsCount.x * gridsCount.y * gridsCount.z]();
     for(int i = 0; i < 3; i++) {
       lowerP.xyz[i] = lower.xyz[i];
+      upperP.xyz[i] = lowerP.xyz[i] + length[i];
       if(!EQZero(lower.xyz[i])) {
         gridsIndexStart.xyz[i] = (int)(lower.xyz[i] * invRes.xyz[i]);
         gridsIndexEnd.xyz[i] = gridsCount.xyz[i] + gridsIndexStart.xyz[i] - 1;
@@ -51,6 +53,11 @@ namespace monitor {
       grids[offset(it->x, it->y, it->z)] = true;
     }
   }
+  void Grids::removeVoxels(std::vector<monitor::Voxel> &data) {
+    for(auto it = data.begin(); it != data.end(); it++) {
+      grids[offset(it->x, it->y, it->z)] = false;
+    }
+  }
   Voxel Grids::posToVoxel(const TVec3d &pos) {
     int x = Clamp((int)(pos.x * invRes.x), gridsIndexStart.x, gridsCount.x - 1),
         y = Clamp((int)(pos.y * invRes.y), gridsIndexStart.y, gridsCount.y - 1),
@@ -58,15 +65,17 @@ namespace monitor {
     Voxel voxel(x, y, z);
     return voxel;
   }
+  TVec3d Grids::voxelToPos(const monitor::Voxel &voxel) {
+    double x = Clamp(voxel.x * res.x, lowerP.x, upperP.x),
+        y = Clamp(voxel.y * res.y, lowerP.y, upperP.y),
+        z = Clamp(voxel.z * res.z, lowerP.z, upperP.z);
+    TVec3d pos(x, y, z);
+    return pos;
+  }
   void Grids::clear() {
     memset(grids, 0, gridsCount.x * gridsCount.y * gridsCount.z);
   }
-  bool Grids::intersect(const Voxel &src, const Voxel &dst, double maxDis) {
-    int maxStep;
-    if(maxDis < 0)
-      maxStep = INT_MAX;
-    else
-      maxStep = (int)(maxDis * invRes.x);
+  bool Grids::intersect(const Voxel &src, const Voxel &dst) {
     Voxel point(src.x, src.y, src.z);
     int dx = dst.x - src.x, dy = dst.y - src.y, dz = dst.z - src.z;
     int x_inc = (dx < 0) ? -1 : 1, y_inc = (dy < 0) ? -1 : 1, z_inc = (dz < 0) ? -1 : 1;
@@ -77,9 +86,12 @@ namespace monitor {
       int err_1 = dy2 - l;
       int err_2 = dz2 - l;
       for (int i = 0; i < l; i++) {
-        maxStep--;
-        if(grids[offset(point.x, point.y, point.z)] && maxStep >= 0)
+        if(grids[offset(point.x, point.y, point.z)]) {
+#ifdef DEBUG
+          std::cout << "(" << src <<") to (" << dst << ") Block By (" << point << ")" << std::endl;
+#endif
           return true;
+        }
         if (err_1 > 0) {
           point.y += y_inc;
           err_1 -= dx2;
@@ -96,9 +108,12 @@ namespace monitor {
       int err_1 = dx2 - m;
       int err_2 = dz2 - m;
       for (int i = 0; i < m; i++) {
-        maxStep--;
-        if(grids[offset(point.x, point.y, point.z)] && maxStep >= 0)
+        if(grids[offset(point.x, point.y, point.z)]) {
+#ifdef DEBUG
+          std::cout << "(" << src <<") to (" << dst << ") Block By (" << point << ")" << std::endl;
+#endif
           return true;
+        }
         if (err_1 > 0) {
           point.x += x_inc;
           err_1 -= dy2;
@@ -115,9 +130,12 @@ namespace monitor {
       int err_1 = dy2 - n;
       int err_2 = dx2 - n;
       for (int i = 0; i < n; i++) {
-        maxStep--;
-        if(grids[offset(point.x, point.y, point.z)] && maxStep >= 0)
+        if(grids[offset(point.x, point.y, point.z)]) {
+#ifdef DEBUG
+          std::cout << "(" << src <<") to (" << dst << ") Block By (" << point << ")" << std::endl;
+#endif
           return true;
+        }
         if (err_1 > 0) {
           point.y += y_inc;
           err_1 -= dz2;
@@ -131,7 +149,7 @@ namespace monitor {
         point.z += z_inc;
       }
     }
-    return grids[offset(point.x, point.y, point.z)] && maxStep >= 0;
+    return grids[offset(point.x, point.y, point.z)];
   }
   size_t Grids::getDatagridCount() const {
     size_t count = 0;
@@ -153,10 +171,9 @@ namespace monitor {
     return std::make_shared<Grids>(length, resolution, lowerPoint);
   }
   std::ostream& operator<<(std::ostream &os, const Grids& grids) {
-    os << "Grdis: " << std::endl;
     os << " Length: " << grids.gridsLength << std::endl;
     os << " Grids Count: " << grids.gridsCount << std::endl;
-    os << " Data Grids Count: " << grids.getDatagridCount() << std::endl;
+    os << " Data Grids Count: " << grids.getDatagridCount();
     return os;
   }
 }

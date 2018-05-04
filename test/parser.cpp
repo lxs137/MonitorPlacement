@@ -17,13 +17,13 @@
 #include "voxelizer/mesh.h"
 
 namespace {
-  double resolution[3] = {0.5, 0.5, 0.5};
+  double resolution[3] = {0.6, 0.6, 0.6};
   class CityObjectParserTest : public ::testing::Test {
   public:
     static void SetUpTestCase() {
       citygml::ParserParams params;
-//      road = citygml::load("./data/LOD3_1.gml", params);
-      city = citygml::load("./data/Road-LOD0.gml", params);
+      city = citygml::load("./data/LOD3_1.gml", params);
+//      city = citygml::load("./data/Road-LOD0.gml", params);
       std::cout << "CityModel: " << city->getEnvelope() << std::endl;
     }
     static void TearDownTestCase() {
@@ -31,7 +31,10 @@ namespace {
     }
   protected:
     virtual void SetUp() {
-      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Road);
+      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(
+          citygml::CityObject::CityObjectsType::COT_Road);
+//      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(
+//          citygml::CityObject::CityObjectsType::COT_Door);
     };
 
     virtual void TearDown() {
@@ -94,8 +97,7 @@ namespace {
 
   TEST_F(CityObjectParserTest, PARSE_ROAD) {
     EXPECT_GT(parserResult.size(), 0);
-    const citygml::CityObject* road = parserResult.front();
-    monitor::Mesh mesh = monitor::parseMeshFromCityObject(road);
+    monitor::Mesh mesh = monitor::parseMeshFromCityObjects(parserResult);
     mesh.writeToFile("./data/Road.obj");
 //    std::vector<monitor::Voxel> voxels;
 //    mesh.voxelizer(voxels, resolution);
@@ -104,10 +106,26 @@ namespace {
 //    std::cout << world << std::endl;
   }
 
+  TEST_F(CityObjectParserTest, TO_VOXEL_MESH) {
+    const std::vector<const citygml::CityObject*> roots = CityObjectParserTest::city->getRootCityObjects();
+    monitor::Mesh cityMesh;
+    for(size_t i = 0; i < roots.size(); i++) {
+      cityMesh.merge(monitor::parseMeshFromCityObjectRecursive(roots[i]));
+    }
+    std::shared_ptr<monitor::Mesh> newMesh =  cityMesh.voxelizerToMesh(resolution);
+    newMesh->writeToFile("./data/Road.obj");
+  }
+
 }
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
+  if(argc > 1) {
+    ::testing::GTEST_FLAG(filter) = argv[1];
+  } else {
+//    ::testing::GTEST_FLAG(filter) = "*PARSE_ROAD*";
+    ::testing::GTEST_FLAG(filter) = "*TO_VOXEL_MESH*";
+  }
   return RUN_ALL_TESTS();
 }
 

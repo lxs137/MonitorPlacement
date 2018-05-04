@@ -20,11 +20,13 @@ namespace monitor {
     Grids() {};
     Grids(double length[3], double resolution[3], const TVec3d &lower);
     Grids(double length[3], double resolution[3]);
-    void addVoxels(std::vector<Voxel>& data);
+    void addVoxels(std::vector<Voxel> &data);
+    void removeVoxels(std::vector<Voxel> &data);
     void clear();
     // Fast Intersect Use Bresenham
-    bool intersect(const Voxel &src, const Voxel &dst, double maxDis = -1.0);
+    bool intersect(const Voxel &src, const Voxel &dst);
     Voxel posToVoxel(const TVec3d &pos);
+    TVec3d voxelToPos(const Voxel &voxel);
     size_t getDatagridCount() const;
     inline bool exist(int x, int y, int z) {
       return grids[offset(x, y, z)];
@@ -45,7 +47,7 @@ namespace monitor {
     TVec3d gridsLength;
     TVec3d res;
     TVec3d invRes;
-    TVec3d lowerP;
+    TVec3d lowerP, upperP;
     bool *grids;
   };
   std::ostream& operator<<(std::ostream &os, const Grids& grids);
