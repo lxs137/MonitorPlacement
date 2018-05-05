@@ -25,8 +25,10 @@ namespace monitor {
     void clear();
     // Fast Intersect Use Bresenham
     bool intersect(const Voxel &src, const Voxel &dst);
-    Voxel posToVoxel(const TVec3d &pos);
-    TVec3d voxelToPos(const Voxel &voxel);
+    Voxel posToVoxel(const TVec3d &pos) const;
+    TVec3d voxelToPos(const Voxel &voxel) const;
+    std::shared_ptr<monitor::Mesh> voxelToMesh(const Voxel &voxel) const;
+    std::shared_ptr<monitor::Mesh> gridsToMesh() const;
     size_t getDatagridCount() const;
     inline bool exist(int x, int y, int z) {
       return grids[offset(x, y, z)];

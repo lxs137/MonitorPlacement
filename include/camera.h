@@ -30,6 +30,7 @@ namespace monitor {
     Camera(const Camera &other): world(other.world), pos(other.pos.xyz), phiH(other.phiH), phiV(other.phiV) {};
     bool canMonitor(const Voxel &target) const;
     int getViewedCount(const std::vector<Voxel> &targets) const;
+    inline Voxel getVoxel() const { return Voxel(pos.xyz); }
     void findBestPhiH(const std::vector<Voxel> &targets);
   private:
     std::shared_ptr<Grids> world;

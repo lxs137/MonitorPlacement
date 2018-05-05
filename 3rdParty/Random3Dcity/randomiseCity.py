@@ -953,6 +953,41 @@ def streetgenerator(specs, CELLSIZE, grid, skipx, skipy):
                 p1y = (c + skipy) * CELLSIZE - separation - width
             holes.append([[p0x, p0y], [p1x, p1y]])
 
+    # genreate random range
+    # range_x = [0]
+    # range_y = [0]
+    # while range_x[-1] < (row+1):
+    #     val = range_x[-1] + random.randint(1, skipx)
+    #     if val < (row+1):
+    #         range_x.append(val)
+    #     else:
+    #         break
+    # print range_x
+
+    # while range_y[-1] < (col+1):
+    #     val = range_y[-1] + random.randint(1, skipy)
+    #     if val < (col+1):
+    #         range_y.append(val)
+    #     else:
+    #         break
+    # print range_y
+
+    # for idx_r, r in enumerate(range_x):
+    #     for idx_c, c in enumerate(range_y):
+    #         p0x = r * CELLSIZE - separation
+    #         next_r = range_x[idx_r + 1] if len(range_x) >= (idx_r+2) else row
+    #         if next_r * CELLSIZE - separation - width >= row * CELLSIZE:
+    #             p1x = row * CELLSIZE + CELLSIZE
+    #         else:
+    #             p1x = next_r * CELLSIZE - separation - width
+    #         p0y = c * CELLSIZE - separation
+    #         next_c = range_y[idx_c + 1] if len(range_y) >= (idx_c+2) else col
+    #         if next_c * CELLSIZE - separation - width >= col * CELLSIZE:
+    #             p1y = col * CELLSIZE + CELLSIZE
+    #         else:
+    #             p1y = next_c * CELLSIZE - separation - width
+    #         holes.append([[p0x, p0y], [p1x, p1y]])
+
     streetnetwork = etree.SubElement(specs, "streets")
     outline = etree.SubElement(streetnetwork, "outline")
     outline.text = str(networkoutline[0][0]) + ' ' + str(networkoutline[0][1]) + ' ' + str(networkoutline[1][0]) + ' ' + str(networkoutline[1][1])
@@ -1005,7 +1040,7 @@ else:
 bspecs, cell = buildinggenerator(n, vgcells, CRS)
 #-- Generate streets
 if STREETS:
-    bspecs = streetgenerator(bspecs, CELLSIZE, cell, 3, 3)
+    bspecs = streetgenerator(bspecs, CELLSIZE, cell, 2, 2)
 #-- Generate the vegetation
 if VEGETATION:
     bspecs = vegetationgenerator(bspecs, CELLSIZE, vgcells, n)

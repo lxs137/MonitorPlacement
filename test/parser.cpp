@@ -23,17 +23,18 @@ namespace {
     static void SetUpTestCase() {
       citygml::ParserParams params;
       city = citygml::load("./data/LOD3_1.gml", params);
-//      city = citygml::load("./data/Road-LOD0.gml", params);
+      road = citygml::load("./data/Road-LOD0.gml", params);
       std::cout << "CityModel: " << city->getEnvelope() << std::endl;
     }
     static void TearDownTestCase() {
       city.reset();
+      road.reset();
     }
   protected:
     virtual void SetUp() {
-      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(
+      parserResult = CityObjectParserTest::road->getAllCityObjectsOfType(
           citygml::CityObject::CityObjectsType::COT_Road);
-//      parserResult = CityObjectParserTest::city->getAllCityObjectsOfType(
+//      parserResult = CityObjectParserTest::road->getAllCityObjectsOfType(
 //          citygml::CityObject::CityObjectsType::COT_Door);
     };
 
@@ -42,11 +43,13 @@ namespace {
       parserResult.shrink_to_fit();
     };
     static std::shared_ptr<const citygml::CityModel> city;
+    static std::shared_ptr<const citygml::CityModel> road;
     std::vector<const citygml::CityObject*> parserResult;
 
   };
 
   std::shared_ptr<const citygml::CityModel> CityObjectParserTest::city = nullptr;
+  std::shared_ptr<const citygml::CityModel> CityObjectParserTest::road = nullptr;
 
   TEST_F(CityObjectParserTest, VOXELIZER_TEST) {
     const citygml::CityObject* object = parserResult.front();
@@ -98,7 +101,7 @@ namespace {
   TEST_F(CityObjectParserTest, PARSE_ROAD) {
     EXPECT_GT(parserResult.size(), 0);
     monitor::Mesh mesh = monitor::parseMeshFromCityObjects(parserResult);
-    mesh.writeToFile("./data/Road.obj");
+    mesh.writeToFile("./data/Road.obj", "White");
 //    std::vector<monitor::Voxel> voxels;
 //    mesh.voxelizer(voxels, resolution);
 //    monitor::Grids world = monitor::cityModelToGrids(CityObjectParserTest::road, resolution);
@@ -109,11 +112,13 @@ namespace {
   TEST_F(CityObjectParserTest, TO_VOXEL_MESH) {
     const std::vector<const citygml::CityObject*> roots = CityObjectParserTest::city->getRootCityObjects();
     monitor::Mesh cityMesh;
+    std::cout << "Count: " << roots.size() << std::endl;
     for(size_t i = 0; i < roots.size(); i++) {
       cityMesh.merge(monitor::parseMeshFromCityObjectRecursive(roots[i]));
     }
-    std::shared_ptr<monitor::Mesh> newMesh =  cityMesh.voxelizerToMesh(resolution);
-    newMesh->writeToFile("./data/Road.obj");
+    cityMesh.writeToFile("./data/city.obj");
+    std::shared_ptr<monitor::Mesh> newMesh = cityMesh.voxelizerToMesh(resolution);
+    newMesh->writeToFile("./data/city_voxel.obj");
   }
 
 }

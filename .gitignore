@@ -1,3 +1,6 @@
 target/
 cmake-build-debug/
 .idea/
+
+*.obj
+*.mtl

@@ -18,7 +18,7 @@
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
   double cameraMinDis = resolution[0] * 20;
-  double cameraHeight = 5;
+  double cameraHeight = 6;
   std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
 
   class CameraMonitorTest : public ::testing::Test {
@@ -38,19 +38,36 @@ namespace {
       cityMesh.voxelizer(cityVoxels, resolution);
       worldGrids = monitor::cityModelToGrids(CameraMonitorTest::city, resolution);
       worldGrids->addVoxels(cityVoxels);
+
+      const std::vector<const citygml::CityObject*> targets = city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Door);
+      monitor::Mesh targetMesh = monitor::parseMeshFromCityObjects(targets);
+      targetMesh.voxelizer(targetVoxels, resolution);
+
+      worldGrids->removeVoxels(targetVoxels);
+
+//      std::shared_ptr<monitor::Mesh> voxelMesh = worldGrids->gridsToMesh();
+//      voxelMesh->writeToFile("./data/city_voxel.obj", "Green");
+
     }
     static void TearDownTestCase() {
       road.reset();
       city.reset();
       worldGrids.reset();
+      targetVoxels.clear();
+      targetVoxels.shrink_to_fit();
     }
   protected:
     virtual void SetUp() {
       const citygml::Envelope &envelope = CameraMonitorTest::road->getEnvelope();
       const TVec3d &lowerPoint = envelope.getLowerBound(), &upperPoint = envelope.getUpperBound();
-      monitor::Sampler2D sampler2D((int)lowerPoint.x, (int)upperPoint.x, (int)lowerPoint.y, (int)upperPoint.y);
+//      monitor::Sampler2D sampler2D((int)lowerPoint.x, (int)upperPoint.x, (int)lowerPoint.y, (int)upperPoint.y);
+      monitor::Sampler2D sampler2D(0, (int)(upperPoint.x - lowerPoint.x), 0, (int)(upperPoint.y - lowerPoint.y));
       std::shared_ptr<std::vector<TVec2d>> samples = std::make_shared<std::vector<TVec2d>>();
       sampler2D.generateSamples(samples, cameraMinDis);
+      for(auto it = samples->begin(); it != samples->end(); it++) {
+        it->x += lowerPoint.x;
+        it->y += lowerPoint.y;
+      }
 
       std::cout << "Samplers Count: " << samples->size() << std::endl;
       std::vector<const citygml::CityObject*> roads = CameraMonitorTest::road->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Road);
@@ -70,29 +87,35 @@ namespace {
       }
       std::cout << "Valid Samplers Count: " << validSamples.size() << std::endl;
 
-      const std::vector<const citygml::CityObject*> targets = CameraMonitorTest::city->getAllCityObjectsOfType(citygml::CityObject::CityObjectsType::COT_Door);
-      monitor::Mesh targetMesh = monitor::parseMeshFromCityObjects(targets);
-      targetMesh.voxelizer(targetVoxels, resolution);
-
-      CameraMonitorTest::worldGrids->removeVoxels(targetVoxels);
+      std::vector<monitor::Camera> allCameras;
+      allCameras.reserve(samples->size());
+      for(auto it = samples->begin(); it != samples->end(); it++) {
+        TVec3d cameraPos(it->x, it->y, cameraHeight);
+        allCameras.emplace_back(CameraMonitorTest::worldGrids, cameraPos, 0.0, -20.0);
+      }
+      monitor::Mesh allCamerasMesh;
+      for(auto it = allCameras.begin(); it != allCameras.end(); it++) {
+        std::shared_ptr<monitor::Mesh> itMesh = CameraMonitorTest::worldGrids->voxelToMesh(it->getVoxel());
+        allCamerasMesh.merge(*itMesh);
+      }
+      allCamerasMesh.writeToFile("./data/camera_all.obj", "Blue");
 
     }
     virtual void TearDown() {
       validSamples.clear();
       validSamples.shrink_to_fit();
-      targetVoxels.clear();
-      targetVoxels.shrink_to_fit();
     }
     static std::shared_ptr<const citygml::CityModel> road;
     static std::shared_ptr<const citygml::CityModel> city;
     static std::shared_ptr<monitor::Grids> worldGrids;
-    std::vector<monitor::Voxel> targetVoxels;
+    static std::vector<monitor::Voxel> targetVoxels;
     std::vector<TVec2d> validSamples;
   };
 
   std::shared_ptr<const citygml::CityModel> CameraMonitorTest::road = nullptr;
   std::shared_ptr<const citygml::CityModel> CameraMonitorTest::city = nullptr;
   std::shared_ptr<monitor::Grids> CameraMonitorTest::worldGrids = nullptr;
+  std::vector<monitor::Voxel> CameraMonitorTest::targetVoxels;
 
   TEST_F(CameraMonitorTest, INTERSECT_TEST) {
     monitor::Voxel src(-6,125,10), target(160, 209, 3);
@@ -144,15 +167,27 @@ namespace {
         notMonitored++;
     }
     std::cout << "Not Be Monitored: " << notMonitored << std::endl;
-
-//    std::cout << "CityGrids: " << *worldGrids << std::endl;
     std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount << std::endl;
 
     std::vector<monitor::Camera> preChooseCameras;
     monitor::preChooseGreedy(cameras, preChooseCameras, view, targetCount, 15);
+
     for(auto it = preChooseCameras.begin(); it != preChooseCameras.end(); it++) {
       std::cout << *it << std::endl;
     }
+    monitor::Mesh cameraMesh;
+    for(auto it = cameras.begin(); it != cameras.end(); it++) {
+      std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(it->getVoxel());
+      cameraMesh.merge(*itMesh);
+    }
+    cameraMesh.writeToFile("./data/camera.obj", "Red");
+
+    monitor::Mesh targetsMesh;
+    for(auto it = targetVoxels.begin(); it != targetVoxels.end(); it++) {
+      std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(*it);
+      targetsMesh.merge(*itMesh);
+    }
+    targetsMesh.writeToFile("./data/target.obj", "Blue");
 
     delete[] countPerCamera;
     delete[] countPerTarget;

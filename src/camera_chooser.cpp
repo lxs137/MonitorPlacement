@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iomanip>
 
-#define CHOOSER_DEBUG
+//#define CHOOSER_DEBUG
 
 namespace monitor {
   void reEvalViewMatrix(bool **viewMatrix, int choosedCameraIndex, size_t targetCount,
@@ -56,6 +56,8 @@ namespace monitor {
 #endif
       auto result = std::max_element(cameraViewedCount.begin(), cameraViewedCount.end());
       int mostViewedIndex = (int)std::distance(cameraViewedCount.begin(), result);
+      if(cameraViewedCount[mostViewedIndex] <= 1)
+        break;
       res.push_back(src[mostViewedIndex]);
       resCount--;
       reEvalViewMatrix(view, mostViewedIndex, targetCount, cameraViewedCount);

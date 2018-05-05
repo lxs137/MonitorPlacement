@@ -8,6 +8,8 @@
 #include <fstream>
 #include "voxelizer/voxelizer.h"
 
+//#define MESH_DEBUG
+
 namespace monitor {
   Mesh::Mesh() {
     this->mesh = vx_mesh_alloc(0, 0);
@@ -36,6 +38,14 @@ namespace monitor {
       this->mesh->vertices[verticIndex].z = (float)it->z;
       verticIndex++;
     }
+#ifdef MESH_DEBUG
+    for(auto it = indices.begin(); it != indices.end(); it++) {
+      if(*it >= vertics.size()) {
+        std::cout << "Error: " << *this << std::endl;
+        break;
+      }
+    }
+#endif
   }
 
   Mesh::~Mesh() {
@@ -84,13 +94,15 @@ namespace monitor {
     mesh = newMesh;
   }
 
-  void Mesh::writeToFile(std::string filename) {
+  void Mesh::writeToFile(std::string filename, std::string color) {
     std::ofstream objFile;
     objFile.open(filename, std::ios::out | std::ios::trunc);
     if(!objFile.is_open()) {
       std::cout << "File Can Not Open: " << filename << std::endl;
       return;
     }
+    objFile << "mtllib color.mtl" << std::endl;
+    objFile << "usemtl " << color << std::endl;
     for(size_t i = 0; i < mesh->nvertices; i++) {
       vx_vertex_t *v = &(mesh->vertices[i]);
       objFile << "v " << v->x << " " << v->y << " " << v->z << std::endl;

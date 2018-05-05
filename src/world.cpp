@@ -58,19 +58,60 @@ namespace monitor {
       grids[offset(it->x, it->y, it->z)] = false;
     }
   }
-  Voxel Grids::posToVoxel(const TVec3d &pos) {
+  Voxel Grids::posToVoxel(const TVec3d &pos) const {
     int x = Clamp((int)(pos.x * invRes.x), gridsIndexStart.x, gridsCount.x - 1),
         y = Clamp((int)(pos.y * invRes.y), gridsIndexStart.y, gridsCount.y - 1),
         z = Clamp((int)(pos.z * invRes.z), gridsIndexStart.z, gridsCount.z - 1);
     Voxel voxel(x, y, z);
     return voxel;
   }
-  TVec3d Grids::voxelToPos(const monitor::Voxel &voxel) {
+  TVec3d Grids::voxelToPos(const monitor::Voxel &voxel) const {
     double x = Clamp(voxel.x * res.x, lowerP.x, upperP.x),
         y = Clamp(voxel.y * res.y, lowerP.y, upperP.y),
         z = Clamp(voxel.z * res.z, lowerP.z, upperP.z);
     TVec3d pos(x, y, z);
     return pos;
+  }
+  std::shared_ptr<monitor::Mesh> Grids::voxelToMesh(const monitor::Voxel &voxel) const {
+    TVec3d resHalf(res.x * 0.5, res.y * 0.5, res.z * 0.5);
+    TVec3d center = voxelToPos(voxel);
+    std::vector<TVec3d> vertices;
+    vertices.reserve(8);
+    vertices.emplace_back(center.x + resHalf.x, center.y - resHalf.y, center.z - resHalf.z);
+    vertices.emplace_back(center.x + resHalf.x, center.y + resHalf.y, center.z - resHalf.z);
+    vertices.emplace_back(center.x + resHalf.x, center.y + resHalf.y, center.z + resHalf.z);
+    vertices.emplace_back(center.x + resHalf.x, center.y - resHalf.y, center.z + resHalf.z);
+
+    vertices.emplace_back(center.x - resHalf.x, center.y - resHalf.y, center.z - resHalf.z);
+    vertices.emplace_back(center.x - resHalf.x, center.y + resHalf.y, center.z - resHalf.z);
+    vertices.emplace_back(center.x - resHalf.x, center.y + resHalf.y, center.z + resHalf.z);
+    vertices.emplace_back(center.x - resHalf.x, center.y - resHalf.y, center.z + resHalf.z);
+
+    std::vector<unsigned int> indices = {
+        0, 1, 2, 0, 2, 3,
+        0, 1, 5, 0, 5, 4,
+        0, 4, 7, 0, 7, 3,
+        6, 1, 5, 6, 2, 1,
+        6, 4, 5, 6, 7, 4,
+        6, 3, 2, 6, 7, 3
+    };
+
+    return std::make_shared<monitor::Mesh>(vertices, indices);
+  }
+  std::shared_ptr<monitor::Mesh> Grids::gridsToMesh() const {
+    std::shared_ptr<monitor::Mesh> mesh = std::make_shared<monitor::Mesh>();
+    for(int i = gridsIndexStart.x; i < gridsIndexEnd.x; i++) {
+      for(int j = gridsIndexStart.y; j < gridsIndexEnd.y; j++) {
+        for(int k = gridsIndexStart.z; k < gridsIndexEnd.z; k++) {
+          if(grids[offset(i, j, k)]) {
+            Voxel tempVoxel(i, j, k);
+            auto tempMesh = voxelToMesh(tempVoxel);
+            mesh->merge(*tempMesh);
+          }
+        }
+      }
+    }
+    return mesh;
   }
   void Grids::clear() {
     memset(grids, 0, gridsCount.x * gridsCount.y * gridsCount.z);

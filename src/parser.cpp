@@ -8,6 +8,8 @@
 #include <citygml/cityobject.h>
 #include <citygml/polygon.h>
 #include <citygml/vecs.hpp>
+
+#include "print.h"
 #include "voxelizer/mesh.h"
 #include "utils.h"
 
@@ -43,8 +45,8 @@ Mesh parseMeshFromCityObject(const citygml::CityObject* object) {
 Mesh parseMeshFromCityObjectRecursive(const citygml::CityObject* object) {
   Mesh mesh = parseMeshFromCityObject(object);
   for (unsigned int i = 0; i < object->getChildCityObjectsCount(); i++) {
-//    mesh.merge(parseMeshFromCityObjectRecursive(&object->getChildCityObject(i)));
-    mesh.merge(parseMeshFromCityObject(&object->getChildCityObject(i)));
+    mesh.merge(parseMeshFromCityObjectRecursive(&object->getChildCityObject(i)));
+//    mesh.merge(parseMeshFromCityObject(&object->getChildCityObject(i)));
   }
   return mesh;
 }
@@ -73,7 +75,7 @@ void parseVerticsFromPolygon(std::shared_ptr<const citygml::Polygon> polygon, st
     allVertices.insert(allVertices.end(), vertices.begin(), vertices.end() - 1);
     unsigned int sameIndex1 = 0, sameIndex2 = (unsigned int)vertices.size() - 1;
     for(unsigned long i = 0; i < indices.size(); i += 3) {
-      unsigned int p1 = indices[i], p2 = indices[i + 1], p3 = indices[i + 2];
+      unsigned int p1 = indices[i] % sameIndex2, p2 = indices[i + 1] % sameIndex2, p3 = indices[i + 2] % sameIndex2;
       if((sameIndex1 != p1 && sameIndex1 != p2 && sameIndex1 != p3)
               || (sameIndex2 != p1 && sameIndex2 != p2 && sameIndex2 != p3)) {
         allIndices.push_back(p1 + indiceOffset);

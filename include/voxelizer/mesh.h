@@ -24,7 +24,7 @@ namespace monitor {
     void voxelizer(std::vector<Voxel> &voxels, double resolution[3]);
     std::shared_ptr<Mesh> voxelizerToMesh(double resolution[3]);
     void merge(const Mesh&);
-    void writeToFile(std::string filename);
+    void writeToFile(std::string filename, std::string color = "Green");
     ~Mesh();
   private:
     vx_mesh_t* mesh;
