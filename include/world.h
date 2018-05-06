@@ -14,7 +14,9 @@
 #include "voxelizer/mesh.h"
 
 namespace monitor {
+  class Camera;
   class Grids {
+    friend Camera;
     friend std::ostream& operator<<(std::ostream &os, const Grids& grids);
   public:
     Grids() {};

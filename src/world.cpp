@@ -128,7 +128,7 @@ namespace monitor {
       int err_2 = dz2 - l;
       for (int i = 0; i < l; i++) {
         if(grids[offset(point.x, point.y, point.z)]) {
-#ifdef CHOOSER_DEBUG
+#ifdef PRE_CHOOSE_DEBUG
           std::cout << "(" << src <<") to (" << dst << ") Block By (" << point << ")" << std::endl;
 #endif
           return true;
@@ -150,7 +150,7 @@ namespace monitor {
       int err_2 = dz2 - m;
       for (int i = 0; i < m; i++) {
         if(grids[offset(point.x, point.y, point.z)]) {
-#ifdef CHOOSER_DEBUG
+#ifdef PRE_CHOOSE_DEBUG
           std::cout << "(" << src <<") to (" << dst << ") Block By (" << point << ")" << std::endl;
 #endif
           return true;
@@ -172,7 +172,7 @@ namespace monitor {
       int err_2 = dx2 - n;
       for (int i = 0; i < n; i++) {
         if(grids[offset(point.x, point.y, point.z)]) {
-#ifdef CHOOSER_DEBUG
+#ifdef PRE_CHOOSE_DEBUG
           std::cout << "(" << src <<") to (" << dst << ") Block By (" << point << ")" << std::endl;
 #endif
           return true;

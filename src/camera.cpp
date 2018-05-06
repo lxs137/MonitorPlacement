@@ -52,10 +52,21 @@ namespace monitor {
     }
     phiH = bestPhiH;
   }
+  void Camera::applyDelta(const monitor::CameraDelta &delta) {
+    pos.x = Clamp(pos.x + delta.x, world->gridsIndexStart.x, world->gridsCount.x - 1),
+    pos.y = Clamp(pos.y + delta.y, world->gridsIndexStart.y, world->gridsCount.y - 1),
+    pos.z = Clamp(pos.z + delta.z, world->gridsIndexStart.z, world->gridsCount.z - 1);
+    phiH += delta.phiH, phiV += delta.phiV;
+  }
 
   std::ostream& operator<<(std::ostream &os, const Camera &camera) {
     os << "Camera: " << camera.pos;
     os << " " << std::fixed << camera.phiH << " " << std::fixed << camera.phiV;
+    return os;
+  }
+  std::ostream& operator<<(std::ostream &os, const CameraDelta &delta) {
+    os << delta.x << " " << delta.y << " " << delta.z << " "
+       << std::fixed << delta.phiH << " " << std::fixed << delta.phiV;
     return os;
   }
 }

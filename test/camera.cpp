@@ -15,6 +15,8 @@
 #include "camera_chooser.h"
 #include "sampler/sampler.h"
 
+//#define OUTPUT_OBJ
+
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
   double cameraMinDis = resolution[0] * 20;
@@ -44,9 +46,6 @@ namespace {
       targetMesh.voxelizer(targetVoxels, resolution);
 
       worldGrids->removeVoxels(targetVoxels);
-
-//      std::shared_ptr<monitor::Mesh> voxelMesh = worldGrids->gridsToMesh();
-//      voxelMesh->writeToFile("./data/city_voxel.obj", "Green");
 
     }
     static void TearDownTestCase() {
@@ -87,6 +86,7 @@ namespace {
       }
       std::cout << "Valid Samplers Count: " << validSamples.size() << std::endl;
 
+#ifdef OUTPUT_OBJ
       std::vector<monitor::Camera> allCameras;
       allCameras.reserve(samples->size());
       for(auto it = samples->begin(); it != samples->end(); it++) {
@@ -99,7 +99,7 @@ namespace {
         allCamerasMesh.merge(*itMesh);
       }
       allCamerasMesh.writeToFile("./data/camera_all.obj", "Blue");
-
+#endif
     }
     virtual void TearDown() {
       validSamples.clear();
@@ -129,7 +129,7 @@ namespace {
     cameras.reserve(validSamples.size());
     for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
       TVec3d cameraPos(it->x, it->y, cameraHeight);
-      cameras.emplace_back(worldGrids, cameraPos, 0.0, -20.0);
+      cameras.emplace_back(worldGrids, cameraPos, 0.0, 0.0);
     }
 
     size_t targetCount = targetVoxels.size(), cameraCount = cameras.size();
@@ -142,9 +142,9 @@ namespace {
     size_t *countPerCamera = new size_t[cameraCount]();
     size_t *countPerTarget = new size_t[targetCount]();
 
-    for(size_t i = 0; i < cameraCount; i++) {
-      cameras[i].findBestPhiH(targetVoxels);
-    }
+//    for(size_t i = 0; i < cameraCount; i++) {
+//      cameras[i].findBestPhiH(targetVoxels);
+//    }
 
     for(size_t i = 0; i < targetCount; i++) {
       for(size_t j = 0; j < cameraCount; j++) {
@@ -156,25 +156,36 @@ namespace {
       }
     }
 
-    for(size_t i = 0; i < cameraCount; i++) {
-      double rate = (double)countPerCamera[i] / targetCount;
-      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
-    }
+//    for(size_t i = 0; i < targetCount; i++) {
+//      std::cout << "Camera View Rate(" << targetVoxels[i] << "): " << countPerTarget[i] << std::endl;
+//    }
+
+//    for(size_t i = 0; i < cameraCount; i++) {
+//      double rate = (double)countPerCamera[i] / targetCount;
+//      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
+//    }
 
     size_t notMonitored = 0;
     for(size_t i = 0; i < targetCount; i++) {
       if(countPerTarget[i] == 0)
         notMonitored++;
     }
-    std::cout << "Not Be Monitored: " << notMonitored << std::endl;
-    std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount << std::endl;
+    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(view, targetCount, cameraCount) << std::endl;
 
-    std::vector<monitor::Camera> preChooseCameras;
-    monitor::preChooseGreedy(cameras, preChooseCameras, view, targetCount, 15);
-
-    for(auto it = preChooseCameras.begin(); it != preChooseCameras.end(); it++) {
-      std::cout << *it << std::endl;
+    // Greedy Pre Choose
+    std::vector<int> preChosenCamerasIndex;
+    monitor::preChooseGreedy(cameras, preChosenCamerasIndex, view, targetCount, 15);
+    EXPECT_GT(preChosenCamerasIndex.size(), 0);
+    std::vector<monitor::Camera> preChosenCameras;
+    for(auto it = preChosenCamerasIndex.begin(); it != preChosenCamerasIndex.end(); it++) {
+      std::cout << cameras.at(*it) << std::endl;
+      preChosenCameras.push_back(cameras.at(*it));
     }
+    std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount
+              << " ChooseCamera: " << preChosenCamerasIndex.size() << std::endl;
+    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(view, targetCount, preChosenCamerasIndex) << std::endl;
+
+#ifdef OUTPUT_OBJ
     monitor::Mesh cameraMesh;
     for(auto it = cameras.begin(); it != cameras.end(); it++) {
       std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(it->getVoxel());
@@ -188,12 +199,36 @@ namespace {
       targetsMesh.merge(*itMesh);
     }
     targetsMesh.writeToFile("./data/target.obj", "Blue");
+#endif
+    // Regenerate View Matrix
+    size_t cameraCountPreChosen = preChosenCameras.size();
+    bool *dataPreChosen = new bool[targetCount * cameraCountPreChosen]();
+    bool **viewPreChosen = new bool*[targetCount];
+    for(size_t i = 0; i < targetCount; i++) {
+      viewPreChosen[i] = &dataPreChosen[i * cameraCountPreChosen];
+      for(size_t j = 0; j < cameraCountPreChosen; j++) {
+        viewPreChosen[i][j] = view[i][preChosenCamerasIndex[j]];
+//        viewPreChosen[i][j] = preChosenCameras[j].canMonitor(targetVoxels[i]);
+//        std::cout << viewPreChosen[i][j] << " ";
+      }
+//      std::cout << std::endl;
+    }
+    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(viewPreChosen, targetCount, cameraCountPreChosen) << std::endl;
+
+    // Local Search
+    std::vector<monitor::Camera> localSearchCameras;
+    monitor::localSearch(preChosenCameras, targetVoxels, viewPreChosen, localSearchCameras);
+    for(auto it = localSearchCameras.begin(); it != localSearchCameras.end(); it++) {
+      std::cout << *it << std::endl;
+    }
 
     delete[] countPerCamera;
     delete[] countPerTarget;
     // Free Memory
     delete[] view[0];
     delete[] view;
+    delete[] viewPreChosen[0];
+    delete[] viewPreChosen;
   }
 }
 
