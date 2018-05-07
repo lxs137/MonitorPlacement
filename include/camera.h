@@ -9,15 +9,16 @@
 #include <memory>
 
 #include <citygml/vecs.hpp>
+#include "voxelizer/mesh.h"
 #include "world.h"
 
 namespace monitor {
   // Degree
   const double CAMERA_THETA_V = 60.0;
   const double CAMERA_THETA_V_HALF = 0.5 * CAMERA_THETA_V;
-  const double CAMERA_THETA_H = 100.0;
+  const double CAMERA_THETA_H = 90.0;
   const double CAMERA_THETA_H_HALF = 0.5 * CAMERA_THETA_H;
-  const double CAMERA_VIEW_DIS = 15.0;
+  const double CAMERA_VIEW_DIS = 45.0;
   const double CAMERA_VIEW_DIS_SQUARE = CAMERA_VIEW_DIS * CAMERA_VIEW_DIS;
 
   const double CAMERA_PHI_H_DELTA = 45;
@@ -39,14 +40,17 @@ namespace monitor {
     void applyDelta(const CameraDelta &delta);
     bool canMonitor(const Voxel &target) const;
     int getViewedCount(const std::vector<Voxel> &targets) const;
-    inline Voxel getVoxel() const { return Voxel(pos.xyz); }
+    inline Voxel getPos() const { return Voxel(pos.xyz); }
     void findBestPhiH(const std::vector<Voxel> &targets);
+    std::shared_ptr<monitor::Mesh> getViewFieldMesh();
   private:
+    Voxel getPosInSphericalCoord(const double theta, const double phi) const;
     std::shared_ptr<Grids> world;
     Voxel pos;
     // Degree
     double phiH, phiV;
   };
+
 
   std::ostream& operator<<(std::ostream &os, const Camera &camera);
   std::ostream& operator<<(std::ostream &os, const CameraDelta &delta);

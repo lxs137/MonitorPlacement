@@ -18,7 +18,7 @@ namespace monitor {
     }
     int dx = target.x - pos.x, dy = target.y - pos.y, dz = target.z - pos.z;
     // Test Out Of View
-    if(distance3D(dx, dy, dx) >= CAMERA_VIEW_DIS_SQUARE) {
+    if(distance3DSquare(dx, dy, dz) >= CAMERA_VIEW_DIS_SQUARE) {
       return false;
     }
     // Test Whether Target In Camera's FOV
@@ -51,6 +51,42 @@ namespace monitor {
       }
     }
     phiH = bestPhiH;
+  }
+  Voxel Camera::getPosInSphericalCoord(const double theta, const double phi) const {
+    int x = Clamp((int)(pos.x + CAMERA_VIEW_DIS * sinDegree(theta) * cosDegree(phi)),
+                  world->gridsIndexStart.x, world->gridsCount.x - 1);
+    int y = Clamp((int)(pos.y + CAMERA_VIEW_DIS * sinDegree(theta) * sinDegree(phi)),
+                  world->gridsIndexStart.y, world->gridsCount.y - 1);
+    int z = Clamp((int)(pos.z + CAMERA_VIEW_DIS * cosDegree(theta)),
+                  world->gridsIndexStart.z, world->gridsCount.z - 1);
+    Voxel voxel(x, y, z);
+    return voxel;
+  }
+  std::shared_ptr<monitor::Mesh> Camera::getViewFieldMesh() {
+    double p1Theta = 90.0 - phiV + CAMERA_THETA_V_HALF, p1Phi = phiH - CAMERA_THETA_H_HALF;
+    double p2Theta = p1Theta, p2Phi = phiH + CAMERA_THETA_H_HALF;
+    double p3Theta = 90.0 - phiV - CAMERA_THETA_V_HALF, p3Phi = p2Phi;
+    double p4Theta = p3Theta, p4Phi = p1Phi;
+    Voxel p1Voxel = getPosInSphericalCoord(p1Theta, p1Phi),
+        p2Voxel = getPosInSphericalCoord(p2Theta, p2Phi),
+        p3Voxel = getPosInSphericalCoord(p3Theta, p3Phi),
+        p4Voxel = getPosInSphericalCoord(p4Theta, p4Phi);
+    // Get View Field Area
+    std::vector<TVec3d> vertices;
+    vertices.push_back(world->voxelToPos(pos));
+    vertices.push_back(world->voxelToPos(p1Voxel));
+    vertices.push_back(world->voxelToPos(p2Voxel));
+    vertices.push_back(world->voxelToPos(p3Voxel));
+    vertices.push_back(world->voxelToPos(p4Voxel));
+    std::vector<unsigned int> indices = {
+        0, 1, 4,
+        0, 1, 2,
+        0, 2, 3,
+        0, 4, 3,
+        1, 2, 3,
+        1, 3, 4
+    };
+    return std::make_shared<monitor::Mesh>(vertices, indices);
   }
   void Camera::applyDelta(const monitor::CameraDelta &delta) {
     pos.x = Clamp(pos.x + delta.x, world->gridsIndexStart.x, world->gridsCount.x - 1),

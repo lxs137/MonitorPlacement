@@ -15,12 +15,14 @@
 #include "camera_chooser.h"
 #include "sampler/sampler.h"
 
-//#define OUTPUT_OBJ
+#define OUTPUT_OBJ
 
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
   double cameraMinDis = resolution[0] * 20;
   double cameraHeight = 6;
+  const double CameraPhiV = -15.0;
+  const int GreedyFindCameraCount = 20;
   std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
 
   class CameraMonitorTest : public ::testing::Test {
@@ -91,11 +93,11 @@ namespace {
       allCameras.reserve(samples->size());
       for(auto it = samples->begin(); it != samples->end(); it++) {
         TVec3d cameraPos(it->x, it->y, cameraHeight);
-        allCameras.emplace_back(CameraMonitorTest::worldGrids, cameraPos, 0.0, -20.0);
+        allCameras.emplace_back(CameraMonitorTest::worldGrids, cameraPos, 0.0, CameraPhiV);
       }
       monitor::Mesh allCamerasMesh;
       for(auto it = allCameras.begin(); it != allCameras.end(); it++) {
-        std::shared_ptr<monitor::Mesh> itMesh = CameraMonitorTest::worldGrids->voxelToMesh(it->getVoxel());
+        std::shared_ptr<monitor::Mesh> itMesh = CameraMonitorTest::worldGrids->voxelToMesh(it->getPos());
         allCamerasMesh.merge(*itMesh);
       }
       allCamerasMesh.writeToFile("./data/camera_all.obj", "Blue");
@@ -129,7 +131,7 @@ namespace {
     cameras.reserve(validSamples.size());
     for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
       TVec3d cameraPos(it->x, it->y, cameraHeight);
-      cameras.emplace_back(worldGrids, cameraPos, 0.0, 0.0);
+      cameras.emplace_back(worldGrids, cameraPos, 0.0, CameraPhiV);
     }
 
     size_t targetCount = targetVoxels.size(), cameraCount = cameras.size();
@@ -160,10 +162,10 @@ namespace {
 //      std::cout << "Camera View Rate(" << targetVoxels[i] << "): " << countPerTarget[i] << std::endl;
 //    }
 
-//    for(size_t i = 0; i < cameraCount; i++) {
-//      double rate = (double)countPerCamera[i] / targetCount;
-//      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
-//    }
+    for(size_t i = 0; i < cameraCount; i++) {
+      double rate = (double)countPerCamera[i] / targetCount;
+      std::cout << "Target View Rate(" << cameras[i] << "): " << rate << std::endl;
+    }
 
     size_t notMonitored = 0;
     for(size_t i = 0; i < targetCount; i++) {
@@ -174,7 +176,7 @@ namespace {
 
     // Greedy Pre Choose
     std::vector<int> preChosenCamerasIndex;
-    monitor::preChooseGreedy(cameras, preChosenCamerasIndex, view, targetCount, 15);
+    monitor::preChooseGreedy(cameras, preChosenCamerasIndex, view, targetCount, GreedyFindCameraCount);
     EXPECT_GT(preChosenCamerasIndex.size(), 0);
     std::vector<monitor::Camera> preChosenCameras;
     for(auto it = preChosenCamerasIndex.begin(); it != preChosenCamerasIndex.end(); it++) {
@@ -186,13 +188,6 @@ namespace {
     std::cout << "Coverage rate: " << monitor::evalTargetCoverage(view, targetCount, preChosenCamerasIndex) << std::endl;
 
 #ifdef OUTPUT_OBJ
-    monitor::Mesh cameraMesh;
-    for(auto it = cameras.begin(); it != cameras.end(); it++) {
-      std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(it->getVoxel());
-      cameraMesh.merge(*itMesh);
-    }
-    cameraMesh.writeToFile("./data/camera.obj", "Red");
-
     monitor::Mesh targetsMesh;
     for(auto it = targetVoxels.begin(); it != targetVoxels.end(); it++) {
       std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(*it);
@@ -208,7 +203,6 @@ namespace {
       viewPreChosen[i] = &dataPreChosen[i * cameraCountPreChosen];
       for(size_t j = 0; j < cameraCountPreChosen; j++) {
         viewPreChosen[i][j] = view[i][preChosenCamerasIndex[j]];
-//        viewPreChosen[i][j] = preChosenCameras[j].canMonitor(targetVoxels[i]);
 //        std::cout << viewPreChosen[i][j] << " ";
       }
 //      std::cout << std::endl;
@@ -221,6 +215,23 @@ namespace {
     for(auto it = localSearchCameras.begin(); it != localSearchCameras.end(); it++) {
       std::cout << *it << std::endl;
     }
+
+#ifdef OUTPUT_OBJ
+    monitor::Mesh cameraMesh;
+    for(auto it = localSearchCameras.begin(); it != localSearchCameras.end(); it++) {
+      std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(it->getPos());
+      cameraMesh.merge(*itMesh);
+    }
+    cameraMesh.writeToFile("./data/camera.obj", "Red");
+    monitor::Mesh cameraFOVMesh;
+    for(auto it = localSearchCameras.begin(); it != localSearchCameras.end(); it++) {
+      std::shared_ptr<monitor::Mesh> itMesh = it->getViewFieldMesh();
+      cameraFOVMesh.merge(*itMesh);
+    }
+    cameraFOVMesh.writeToFile("./data/camera_fov.obj", "Field");
+//    std::shared_ptr<monitor::Mesh> cameraFovVoxelMesh =  cameraFOVMesh.voxelizerToMesh(resolution);
+//    cameraFovVoxelMesh->writeToFile("./data/camera_fov.obj", "Field");
+#endif
 
     delete[] countPerCamera;
     delete[] countPerTarget;
