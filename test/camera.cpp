@@ -21,7 +21,7 @@ namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
   double cameraMinDis = resolution[0] * 20;
   double cameraHeight = 6;
-  const double CameraPhiV = -15.0;
+  const double CameraPhiV = 0.0;
   const int GreedyFindCameraCount = 20;
   std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
 
@@ -48,6 +48,18 @@ namespace {
       targetMesh.voxelizer(targetVoxels, resolution);
 
       worldGrids->removeVoxels(targetVoxels);
+#ifdef OUTPUT_OBJ
+      monitor::Mesh targetsMesh;
+      for(auto it = targetVoxels.begin(); it != targetVoxels.end(); it++) {
+        std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(*it);
+        targetsMesh.merge(*itMesh);
+      }
+      targetsMesh.writeToFile("./data/target.obj", "Blue");
+#endif
+//#ifdef OUTPUT_OBJ
+//      std::shared_ptr<monitor::Mesh> cityExcludeTarget = worldGrids->gridsToMesh();
+//      cityExcludeTarget->writeToFile("./data/city_exclude_target.obj", "Green");
+//#endif
 
     }
     static void TearDownTestCase() {
@@ -90,8 +102,8 @@ namespace {
 
 #ifdef OUTPUT_OBJ
       std::vector<monitor::Camera> allCameras;
-      allCameras.reserve(samples->size());
-      for(auto it = samples->begin(); it != samples->end(); it++) {
+      allCameras.reserve(validSamples.size());
+      for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
         TVec3d cameraPos(it->x, it->y, cameraHeight);
         allCameras.emplace_back(CameraMonitorTest::worldGrids, cameraPos, 0.0, CameraPhiV);
       }
@@ -100,7 +112,7 @@ namespace {
         std::shared_ptr<monitor::Mesh> itMesh = CameraMonitorTest::worldGrids->voxelToMesh(it->getPos());
         allCamerasMesh.merge(*itMesh);
       }
-      allCamerasMesh.writeToFile("./data/camera_all.obj", "Blue");
+      allCamerasMesh.writeToFile("./data/camera_valid.obj", "Blue");
 #endif
     }
     virtual void TearDown() {
@@ -124,7 +136,7 @@ namespace {
     gridsPtr->intersect(src, target);
   }
 
-  TEST_F(CameraMonitorTest, CALCULATE_VIEW) {
+  TEST_F(CameraMonitorTest, GREEDY_BEFORE_LOCAL_SEARCH) {
     EXPECT_GT(validSamples.size(), 0);
 
     std::vector<monitor::Camera> cameras;
@@ -241,6 +253,84 @@ namespace {
     delete[] viewPreChosen[0];
     delete[] viewPreChosen;
   }
+
+  TEST_F(CameraMonitorTest, GREEDY_AFTER_LOCAL_SEARCH) {
+    EXPECT_GT(validSamples.size(), 0);
+
+    std::vector<monitor::Camera> cameras;
+    cameras.reserve(validSamples.size());
+    for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
+      TVec3d cameraPos(it->x, it->y, cameraHeight);
+      cameras.emplace_back(worldGrids, cameraPos, 0.0, CameraPhiV);
+    }
+
+    size_t targetCount = targetVoxels.size(), cameraCount = cameras.size();
+    // Allocate Memory
+    bool *data = new bool[targetCount * cameraCount]();
+    bool **view = new bool*[targetCount];
+    for(size_t i = 0; i < targetCount; i++)
+      view[i] = &data[i * cameraCount];
+
+    for(size_t i = 0; i < targetCount; i++) {
+      for(size_t j = 0; j < cameraCount; j++) {
+        view[i][j] = cameras[j].canMonitor(targetVoxels[i]);
+      }
+    }
+    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(view, targetCount, cameraCount) << std::endl;
+
+    // Local Search
+    std::vector<monitor::Camera> localSearchCameras;
+    monitor::localSearch(cameras, targetVoxels, view, localSearchCameras);
+    std::cout << "After Local Search" << std::endl;
+    for(auto it = localSearchCameras.begin(); it != localSearchCameras.end(); it++) {
+      std::cout << *it << std::endl;
+    }
+
+    bool *dataLocalSearch = new bool[targetCount * cameraCount]();
+    bool **viewLocalSearch = new bool*[targetCount];
+    for(size_t i = 0; i < targetCount; i++) {
+      viewLocalSearch[i] = &dataLocalSearch[i * cameraCount];
+      for(size_t j = 0; j < cameraCount; j++) {
+        viewLocalSearch[i][j] = localSearchCameras[j].canMonitor(targetVoxels[i]);
+      }
+    }
+    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(viewLocalSearch, targetCount, cameraCount) << std::endl;
+
+    // Greedy Choose
+    std::vector<int> greedyChosenCamerasIndex;
+    monitor::preChooseGreedy(localSearchCameras, greedyChosenCamerasIndex, viewLocalSearch, targetCount, GreedyFindCameraCount);
+    EXPECT_GT(greedyChosenCamerasIndex.size(), 0);
+    std::vector<monitor::Camera> chosenCameras;
+    for(auto it = greedyChosenCamerasIndex.begin(); it != greedyChosenCamerasIndex.end(); it++) {
+      std::cout << localSearchCameras.at(*it) << std::endl;
+      chosenCameras.push_back(localSearchCameras.at(*it));
+    }
+    std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount
+              << " ChooseCamera: " << greedyChosenCamerasIndex.size() << std::endl;
+    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(viewLocalSearch, targetCount, greedyChosenCamerasIndex) << std::endl;
+
+
+#ifdef OUTPUT_OBJ
+    monitor::Mesh cameraMesh;
+    for(auto it = chosenCameras.begin(); it != chosenCameras.end(); it++) {
+      std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(it->getPos());
+      cameraMesh.merge(*itMesh);
+    }
+    cameraMesh.writeToFile("./data/camera.obj", "Red");
+    monitor::Mesh cameraFOVMesh;
+    for(auto it = chosenCameras.begin(); it != chosenCameras.end(); it++) {
+      std::shared_ptr<monitor::Mesh> itMesh = it->getViewFieldMesh();
+      cameraFOVMesh.merge(*itMesh);
+    }
+    cameraFOVMesh.writeToFile("./data/camera_fov.obj", "Field");
+#endif
+
+    // Free Memory
+    delete[] view[0];
+    delete[] view;
+    delete[] viewLocalSearch[0];
+    delete[] viewLocalSearch;
+  }
 }
 
 int main(int argc, char **argv) {
@@ -249,7 +339,8 @@ int main(int argc, char **argv) {
     ::testing::GTEST_FLAG(filter) = argv[1];
   } else {
 //    ::testing::GTEST_FLAG(filter) = "*INTERSECT_TEST*";
-    ::testing::GTEST_FLAG(filter) = "*CALCULATE_VIEW*";
+//    ::testing::GTEST_FLAG(filter) = "*GREEDY_BEFORE_LOCAL_SEARCH*";
+    ::testing::GTEST_FLAG(filter) = "*GREEDY_AFTER_LOCAL_SEARCH*";
   }
   return RUN_ALL_TESTS();
 }

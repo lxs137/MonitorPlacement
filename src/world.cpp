@@ -105,6 +105,7 @@ namespace monitor {
         for(int k = gridsIndexStart.z; k < gridsIndexEnd.z; k++) {
           if(grids[offset(i, j, k)]) {
             Voxel tempVoxel(i, j, k);
+            std::cout << "Voxel: " << tempVoxel << std::endl;
             auto tempMesh = voxelToMesh(tempVoxel);
             mesh->merge(*tempMesh);
           }
