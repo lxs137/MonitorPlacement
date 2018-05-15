@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <array>
+#include <fstream>
 
 #include <citygml/citymodel.h>
 #include <citygml/citygml.h>
@@ -16,13 +17,15 @@
 #include "sampler/sampler.h"
 
 #define OUTPUT_OBJ
+//#define OUTPUT_RATE
+// #define OUTPUT_POS
 
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
   double cameraMinDis = resolution[0] * 20;
-  double cameraHeight = 6;
+  double cameraHeight = 10;
   const double CameraPhiV = 0.0;
-  const int GreedyFindCameraCount = 20;
+  int GreedyFindCameraCount = 20;
   std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
 
   class CameraMonitorTest : public ::testing::Test {
@@ -282,9 +285,11 @@ namespace {
     std::vector<monitor::Camera> localSearchCameras;
     monitor::localSearch(cameras, targetVoxels, view, localSearchCameras);
     std::cout << "After Local Search" << std::endl;
+#ifdef OUTPUT_POS
     for(auto it = localSearchCameras.begin(); it != localSearchCameras.end(); it++) {
       std::cout << *it << std::endl;
     }
+#endif
 
     bool *dataLocalSearch = new bool[targetCount * cameraCount]();
     bool **viewLocalSearch = new bool*[targetCount];
@@ -294,7 +299,8 @@ namespace {
         viewLocalSearch[i][j] = localSearchCameras[j].canMonitor(targetVoxels[i]);
       }
     }
-    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(viewLocalSearch, targetCount, cameraCount) << std::endl;
+    double localSearchCoverageRate = monitor::evalTargetCoverage(viewLocalSearch, targetCount, cameraCount);
+    std::cout << "Coverage rate: " << localSearchCoverageRate << std::endl;
 
     // Greedy Choose
     std::vector<int> greedyChosenCamerasIndex;
@@ -302,21 +308,31 @@ namespace {
     EXPECT_GT(greedyChosenCamerasIndex.size(), 0);
     std::vector<monitor::Camera> chosenCameras;
     for(auto it = greedyChosenCamerasIndex.begin(); it != greedyChosenCamerasIndex.end(); it++) {
+#ifdef OUTPUT_POS
       std::cout << localSearchCameras.at(*it) << std::endl;
+#endif
       chosenCameras.push_back(localSearchCameras.at(*it));
     }
     std::cout << "TargetCount: " << targetCount << " CameraCount: " << cameraCount
-              << " ChooseCamera: " << greedyChosenCamerasIndex.size() << std::endl;
-    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(viewLocalSearch, targetCount, greedyChosenCamerasIndex) << std::endl;
+              << " ChooseCamera: " << chosenCameras.size() << std::endl;
+    double finalCoverageRate = monitor::evalTargetCoverage(viewLocalSearch, targetCount, greedyChosenCamerasIndex);
+    std::cout << "Coverage rate: " << finalCoverageRate << std::endl;
 
+
+#ifdef OUTPUT_RATE
+    std::ofstream objFile;
+    objFile.open("coverage-rate", std::ios::app);
+    objFile << localSearchCoverageRate << "  " << finalCoverageRate << std::endl;
+#endif
 
 #ifdef OUTPUT_OBJ
     monitor::Mesh cameraMesh;
     for(auto it = chosenCameras.begin(); it != chosenCameras.end(); it++) {
       std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(it->getPos());
       cameraMesh.merge(*itMesh);
+      std::cout << *it << std::endl;
     }
-    cameraMesh.writeToFile("./data/camera.obj", "Red");
+    cameraMesh.writeToFile("./data/camera.obj", "Camera");
     monitor::Mesh cameraFOVMesh;
     for(auto it = chosenCameras.begin(); it != chosenCameras.end(); it++) {
       std::shared_ptr<monitor::Mesh> itMesh = it->getViewFieldMesh();
@@ -325,22 +341,56 @@ namespace {
     cameraFOVMesh.writeToFile("./data/camera_fov.obj", "Field");
 #endif
 
+#ifdef OUTPUT_OBJ
+    monitor::Mesh targetsMonitorMesh;
+    for(size_t i = 0; i < targetCount; i ++) {
+      for(auto itIndex = greedyChosenCamerasIndex.begin(); itIndex != greedyChosenCamerasIndex.end(); itIndex++) {
+        if(viewLocalSearch[i][*itIndex]) {
+          std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(targetVoxels[i]);
+          targetsMonitorMesh.merge(*itMesh);
+          break;
+        }
+      }
+    }
+    targetsMonitorMesh.writeToFile("./data/target_monitor.obj", "Blue");
+#endif
+
     // Free Memory
     delete[] view[0];
     delete[] view;
     delete[] viewLocalSearch[0];
     delete[] viewLocalSearch;
   }
+
+  TEST_F(CameraMonitorTest, FOV) {
+    worldGrids->clear();
+    TVec3d pos(100.0, 50.0, 15.0);
+    monitor::Camera camera(worldGrids, pos, GreedyFindCameraCount, -20);
+    std::shared_ptr<monitor::Mesh> cameraMesh = camera.getViewFieldMesh();
+    cameraMesh->writeToFile("./data/single_camera.obj", "Field");
+    std::cout << *CameraMonitorTest::worldGrids << std::endl;
+    monitor::Mesh targetsMonitorMesh;
+    for(int y = 0; y < 250; y++) {
+      for(int x = 0; x < 300; x++) {
+        for(int z = 0; z < 48; z++) {
+          monitor::Voxel voxel(x, y, z);
+          if(camera.canMonitor(voxel)) {
+            std::shared_ptr<monitor::Mesh> itMesh = worldGrids->voxelToMesh(voxel);
+            targetsMonitorMesh.merge(*itMesh);
+          }
+        }
+      }
+      std::cout << "line " << y << std::endl;
+    }
+    targetsMonitorMesh.writeToFile("./data/target_monitor.obj", "Blue");
+  }
 }
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
-  if(argc > 1) {
-    ::testing::GTEST_FLAG(filter) = argv[1];
-  } else {
-//    ::testing::GTEST_FLAG(filter) = "*INTERSECT_TEST*";
-//    ::testing::GTEST_FLAG(filter) = "*GREEDY_BEFORE_LOCAL_SEARCH*";
-    ::testing::GTEST_FLAG(filter) = "*GREEDY_AFTER_LOCAL_SEARCH*";
-  }
+  ::testing::GTEST_FLAG(filter) = "*GREEDY_AFTER_LOCAL_SEARCH*";
+//  ::testing::GTEST_FLAG(filter) = "*FOV*";
+  GreedyFindCameraCount = atoi(argv[1]);
+  std::cout << "ResCameraCount: " << GreedyFindCameraCount << std::endl;
   return RUN_ALL_TESTS();
 }

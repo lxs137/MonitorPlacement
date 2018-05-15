@@ -17,9 +17,11 @@ namespace monitor {
   const std::array<int, 3> VOXEL_DELTA_Y = {{-2, 0, 2}};
   const std::array<int, 3> VOXEL_DELTA_Z = {{-2, 0, 2}};
   // Degree
-//  const std::array<double, 12> PHI_H_DELTA = {{0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240, 270, 300, 330}};
-  const std::array<double, 12> PHI_H_DELTA = {{-150.0, -120.0 -90.0, 60.0, 30.0, 0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0}};
-  const std::array<double, 7> PHI_V_DELTA = {{-45.0, -30.0, -15.0, 0.0, 15.0, 30.0, 45.0}};
+  const std::array<double, 12> PHI_H_DELTA = {{0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0, 210.0, 240, 270, 300, 330}};
+//  const std::array<double, 3> PHI_H_DELTA = {{30.0, 45.0, 60.0}};
+//  const std::array<double, 12> PHI_H_DELTA = {{-150.0, -120.0 -90.0, 60.0, 30.0, 0.0, 30.0, 60.0, 90.0, 120.0, 150.0, 180.0}};
+  const std::array<double, 7> PHI_V_DELTA = {{-30.0, -20.0, -10.0, 0.0, 10.0, 20.0, 30.0}};
+//  const std::array<double, 3> PHI_V_DELTA = {{-30.0, 0.0, 30.0}};
 
   void reEvalViewMatrix(bool **viewMatrix, int choosedCameraIndex, size_t targetCount, std::vector<int> &cameraViewedCount);
 

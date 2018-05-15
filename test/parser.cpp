@@ -109,6 +109,30 @@ namespace {
 //    std::cout << world << std::endl;
   }
 
+  TEST_F(CityObjectParserTest, PARSE_ROOF) {
+    std::vector<const citygml::CityObject*> roofs = CityObjectParserTest::city->getAllCityObjectsOfType(
+        citygml::CityObject::CityObjectsType::COT_RoofSurface);
+    monitor::Mesh roofMesh = monitor::parseMeshFromCityObjects(roofs);
+    roofMesh.writeToFile("./data/city_roof.obj", "Roof");
+  }
+
+  TEST_F(CityObjectParserTest, PARSE_WALL) {
+    std::vector<const citygml::CityObject*> walls = CityObjectParserTest::city->getAllCityObjectsOfType(
+        citygml::CityObject::CityObjectsType::COT_WallSurface);
+    std::vector<const citygml::CityObject*> grouds = CityObjectParserTest::city->getAllCityObjectsOfType(
+        citygml::CityObject::CityObjectsType::COT_GroundSurface);
+    walls.insert(walls.end(), grouds.begin(), grouds.end());
+    monitor::Mesh roofMesh = monitor::parseMeshFromCityObjects(walls);
+    roofMesh.writeToFile("./data/city_wall.obj", "Wall");
+  }
+
+  TEST_F(CityObjectParserTest, PARSE_WINDOW) {
+    std::vector<const citygml::CityObject*> windows = CityObjectParserTest::city->getAllCityObjectsOfType(
+        citygml::CityObject::CityObjectsType::COT_Window);
+    monitor::Mesh windowMesh = monitor::parseMeshFromCityObjects(windows);
+    windowMesh.writeToFile("./data/city_window.obj", "Window");
+  }
+
   TEST_F(CityObjectParserTest, TO_VOXEL_MESH) {
     const std::vector<const citygml::CityObject*> roots = CityObjectParserTest::city->getRootCityObjects();
     monitor::Mesh cityMesh;
@@ -117,8 +141,8 @@ namespace {
       cityMesh.merge(monitor::parseMeshFromCityObjectRecursive(roots[i]));
     }
     cityMesh.writeToFile("./data/city.obj");
-    std::shared_ptr<monitor::Mesh> newMesh = cityMesh.voxelizerToMesh(resolution);
-    newMesh->writeToFile("./data/city_voxel.obj");
+//    std::shared_ptr<monitor::Mesh> newMesh = cityMesh.voxelizerToMesh(resolution);
+//    newMesh->writeToFile("./data/city_voxel.obj");
   }
 
 }

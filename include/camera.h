@@ -11,15 +11,19 @@
 #include <citygml/vecs.hpp>
 #include "voxelizer/mesh.h"
 #include "world.h"
+#include "utils.h"
 
 namespace monitor {
   // Degree
   const double CAMERA_THETA_V = 60.0;
   const double CAMERA_THETA_V_HALF = 0.5 * CAMERA_THETA_V;
-  const double CAMERA_THETA_H = 90.0;
+  const double CAMERA_THETA_H = 80.0;
   const double CAMERA_THETA_H_HALF = 0.5 * CAMERA_THETA_H;
   const double CAMERA_VIEW_DIS = 45.0;
+//  const double CAMERA_VIEW_DIS = 15.0;
   const double CAMERA_VIEW_DIS_SQUARE = CAMERA_VIEW_DIS * CAMERA_VIEW_DIS;
+  const double CAMERA_VIEW_CORNER_DIS = CAMERA_VIEW_DIS / (cosDegree(CAMERA_THETA_V_HALF) * cosDegree(CAMERA_THETA_H_HALF));
+  const double CAMERA_VIEW_CORNER_DIS_SQUARE = CAMERA_VIEW_CORNER_DIS * CAMERA_VIEW_CORNER_DIS;
 
   const double CAMERA_PHI_H_DELTA = 45;
   const double CAMERA_PHI_V_DELTA = 10;
@@ -45,10 +49,13 @@ namespace monitor {
     std::shared_ptr<monitor::Mesh> getViewFieldMesh();
   private:
     Voxel getPosInSphericalCoord(const double theta, const double phi) const;
+    Voxel evalFarPlaneCenter();
     std::shared_ptr<Grids> world;
     Voxel pos;
+    Voxel farPlane[4];
     // Degree
     double phiH, phiV;
+    double phiHCos, phiHSin, phiVCos, phiVSin;
   };
 
 

@@ -10,6 +10,18 @@ namespace monitor {
   Camera::Camera(std::shared_ptr<monitor::Grids> worldPointer, const TVec3d &position,
                  double _phiH, double _phiV): world(worldPointer), phiH(_phiH), phiV(_phiV) {
     pos = world->posToVoxel(position);
+    phiHCos = cosDegree(phiH);
+    phiHSin = sinDegree(phiH);
+    phiVCos = cosDegree(phiV);
+    phiVSin = sinDegree(phiV);
+    double p1Theta = 90.0 - phiV + CAMERA_THETA_V_HALF, p1Phi = phiH - CAMERA_THETA_H_HALF;
+    double p2Theta = p1Theta, p2Phi = phiH + CAMERA_THETA_H_HALF;
+    double p3Theta = 90.0 - phiV - CAMERA_THETA_V_HALF, p3Phi = p2Phi;
+    double p4Theta = p3Theta, p4Phi = p1Phi;
+    farPlane[0] = getPosInSphericalCoord(p1Theta, p1Phi);
+    farPlane[1] = getPosInSphericalCoord(p2Theta, p2Phi);
+    farPlane[2] = getPosInSphericalCoord(p3Theta, p3Phi);
+    farPlane[3] = getPosInSphericalCoord(p4Theta, p4Phi);
   }
   bool Camera::canMonitor(const monitor::Voxel &target) const {
     // Test No Blocking
@@ -18,15 +30,29 @@ namespace monitor {
     }
     int dx = target.x - pos.x, dy = target.y - pos.y, dz = target.z - pos.z;
     // Test Out Of View
-    if(distance3DSquare(dx, dy, dz) >= CAMERA_VIEW_DIS_SQUARE) {
+    double disTest = dx*phiVCos*phiHCos - dy*phiVCos*phiHSin + dz*phiVSin;
+    if(!(disTest <= CAMERA_VIEW_DIS && disTest > 0)) {
       return false;
     }
     // Test Whether Target In Camera's FOV
-    double hDegree = atanDegree((double)dx / dy);
+    double hDegree = atanDegree((double)dy / dx);
+    if(dx > 0 && dy > 0) {
+      hDegree = 360 - hDegree;
+    } else if (dx > 0 && dy < 0) {
+      hDegree = -hDegree;
+    } else if (dx < 0 && dy < 0) {
+      hDegree = 180 - hDegree;
+    } else {
+      hDegree = 180 - hDegree;
+    }
+//    double phiHMin = phiH - CAMERA_THETA_H_HALF, phiHMax = phiH + CAMERA_THETA_H_HALF;
     if(!(hDegree >= phiH - CAMERA_THETA_H_HALF && hDegree <= phiH + CAMERA_THETA_H_HALF))
       return false;
     double vDegree = asinDegree(dz / distance3D(dx, dy, dz));
     bool result = (vDegree >= phiV - CAMERA_THETA_V_HALF && vDegree <= phiV + CAMERA_THETA_V_HALF);
+//    if(result) {
+//      std::cout << "hDegree: " << hDegree << ", vDegree: " << vDegree << std::endl;
+//    }
     return result;
   }
   int Camera::getViewedCount(const std::vector<monitor::Voxel> &targets) const {
@@ -53,11 +79,11 @@ namespace monitor {
     phiH = bestPhiH;
   }
   Voxel Camera::getPosInSphericalCoord(const double theta, const double phi) const {
-    int x = Clamp((int)(pos.x + CAMERA_VIEW_DIS * sinDegree(theta) * cosDegree(phi)),
+    int x = Clamp((int)(pos.x + CAMERA_VIEW_CORNER_DIS * sinDegree(theta) * cosDegree(phi)),
                   world->gridsIndexStart.x, world->gridsCount.x - 1);
-    int y = Clamp((int)(pos.y + CAMERA_VIEW_DIS * sinDegree(theta) * sinDegree(phi)),
+    int y = Clamp((int)(pos.y - CAMERA_VIEW_CORNER_DIS * sinDegree(theta) * sinDegree(phi)),
                   world->gridsIndexStart.y, world->gridsCount.y - 1);
-    int z = Clamp((int)(pos.z + CAMERA_VIEW_DIS * cosDegree(theta)),
+    int z = Clamp((int)(pos.z + CAMERA_VIEW_CORNER_DIS * cosDegree(theta)),
                   world->gridsIndexStart.z, world->gridsCount.z - 1);
     Voxel voxel(x, y, z);
     return voxel;
@@ -92,7 +118,19 @@ namespace monitor {
     pos.x = Clamp(pos.x + delta.x, world->gridsIndexStart.x, world->gridsCount.x - 1),
     pos.y = Clamp(pos.y + delta.y, world->gridsIndexStart.y, world->gridsCount.y - 1),
     pos.z = Clamp(pos.z + delta.z, world->gridsIndexStart.z, world->gridsCount.z - 1);
-    phiH += delta.phiH, phiV += delta.phiV;
+    phiH += delta.phiH , phiV += delta.phiV;
+    phiHCos = cosDegree(phiH);
+    phiHSin = sinDegree(phiH);
+    phiVCos = cosDegree(phiV);
+    phiVSin = sinDegree(phiV);
+    double p1Theta = 90.0 - phiV + CAMERA_THETA_V_HALF, p1Phi = phiH - CAMERA_THETA_H_HALF;
+    double p2Theta = p1Theta, p2Phi = phiH + CAMERA_THETA_H_HALF;
+    double p3Theta = 90.0 - phiV - CAMERA_THETA_V_HALF, p3Phi = p2Phi;
+    double p4Theta = p3Theta, p4Phi = p1Phi;
+    farPlane[0] = getPosInSphericalCoord(p1Theta, p1Phi);
+    farPlane[1] = getPosInSphericalCoord(p2Theta, p2Phi);
+    farPlane[2] = getPosInSphericalCoord(p3Theta, p3Phi);
+    farPlane[3] = getPosInSphericalCoord(p4Theta, p4Phi);
   }
 
   std::ostream& operator<<(std::ostream &os, const Camera &camera) {

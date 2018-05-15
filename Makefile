@@ -1,5 +1,5 @@
 CC = g++
-CXXFLAGS = --std=c++11 -Wall -Wfloat-equal -Weffc++
+CXXFLAGS = --std=c++11 -Wall -Wfloat-equal -Weffc++ -O3
 LDFLAGS = -L /usr/local/lib -l citygml
 SRC_DIR = src
 INCLUDE_DIR = include
@@ -89,3 +89,4 @@ help :
 	@echo "... stats"
 	@echo "... tag=\"\" deploy"
 .PHONY : help
+

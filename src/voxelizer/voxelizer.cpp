@@ -622,7 +622,7 @@ vx_hash_table_t* vx__voxelize(vx_mesh_t const* m,
             vx_voxel_data_t* nodedata;
             float a1, a2, a3;
             float area;
-            float norm;
+//            float norm;
 
             nodedata = VX_MALLOC(vx_voxel_data_t, 1);
 
@@ -636,9 +636,9 @@ vx_hash_table_t* vx__voxelize(vx_mesh_t const* m,
               c2 = triangle.colors[1];
               c3 = triangle.colors[2];
 
-              vx_triangle_t t1 = {v1, v2, boxcenter};
-              vx_triangle_t t2 = {v2, v3, boxcenter};
-              vx_triangle_t t3 = {v3, v1, boxcenter};
+              vx_triangle_t t1 = {{{v1, v2, boxcenter}}};
+              vx_triangle_t t2 = {{{v2, v3, boxcenter}}};
+              vx_triangle_t t3 = {{{v3, v1, boxcenter}}};
 
               a1 = vx__triangle_area(&t1);
               a2 = vx__triangle_area(&t2);
@@ -685,7 +685,7 @@ vx_mesh_t* vx_voxelize(vx_mesh_t const* m,
   vx_hash_table_t* table = NULL;
   size_t voxels = 0;
 
-  vx_vertex_t vs = {voxelsizex, voxelsizey, voxelsizez};
+  vx_vertex_t vs = {{{voxelsizex, voxelsizey, voxelsizez}}};
   vx_vertex_t hvs = vs;
 
   vx__vec3_multiply(&hvs, 0.5f);
@@ -745,7 +745,7 @@ vx_point_cloud_t* vx_voxelize_pc(vx_mesh_t const* mesh,
   vx_hash_table_t* table = NULL;
   size_t voxels = 0;
 
-  vx_vec3_t vs = {voxelsizex, voxelsizey, voxelsizez};
+  vx_vec3_t vs = {{{voxelsizex, voxelsizey, voxelsizez}}};
   vx_vec3_t hvs = vs;
 
   vx__vec3_multiply(&hvs, 0.5f);

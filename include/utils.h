@@ -11,7 +11,7 @@
 
 #define PI 3.14
 #define RADIAN_TO_DEGREE 57.31
-#define DEGREE_TO_RADIAN 0.017
+#define DEGREE_TO_RADIAN 0.01745
 #define DOUBLE_ZERO 1e-4
 
 //#define DEBUG
@@ -62,6 +62,9 @@ namespace monitor {
   }
   inline double asinDegree(const double val) {
     return std::asin(val) * RADIAN_TO_DEGREE;
+  }
+  inline double acosDegree(const double val) {
+    return std::acos(val) * RADIAN_TO_DEGREE;
   }
   inline double distance3DSquare(const double dx, const double dy, const double dz) {
     return dx * dx + dy * dy + dz * dz;

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iomanip>
 
-//#define PRE_CHOOSE_DEBUG
+#define PRE_CHOOSE_DEBUG
 #define LOCAL_SEARCH_DEBUG
 
 namespace monitor {
@@ -46,8 +46,9 @@ namespace monitor {
       for(size_t j = 0; j < cameraCount; j++)
         cameraViewedCount[j] += view[i][j] ? 1 : 0;
     }
-
+#ifdef PRE_CHOOSE_DEBUG
     std::cout.setf(std::ios::left);
+#endif
     do {
 #ifdef PRE_CHOOSE_DEBUG
       std::cout << "resCount: " << resCount << std::endl;
@@ -64,7 +65,9 @@ namespace monitor {
       resCount--;
       reEvalViewMatrix(view, mostViewedIndex, targetCount, cameraViewedCount);
     } while(resCount > 0);
+#ifdef PRE_CHOOSE_DEBUG
     std::cout.setf(std::ios::right);
+#endif
 
     delete[] view[0];
     delete[] view;
@@ -75,7 +78,7 @@ namespace monitor {
     const size_t targetCount = targets.size();
     const size_t viewMatrixSize = cameraCount * targetCount;
     bool **view = new bool*[targetCount]();
-    view[0] = new bool[viewMatrixSize];
+    view[0] = new bool[viewMatrixSize]();
     memcpy(view[0], sourceView[0], viewMatrixSize);
     for(size_t i = 1, linePtrStep = sizeof(bool) * cameraCount; i < targetCount; i++) {
       view[i] = view[i - 1] + linePtrStep;
@@ -87,7 +90,7 @@ namespace monitor {
                         * VOXEL_DELTA_Z.size() * PHI_H_DELTA.size() * PHI_V_DELTA.size());
     generateSearchSpace(searchSpace);
     double maxCoverage = evalTargetCoverage(view, targetCount, cameraCount);
-    bool *bestViewSnapshot = new bool[viewMatrixSize];
+    bool *bestViewSnapshot = new bool[viewMatrixSize]();
 
     for(size_t j = 0; j < cameraCount; j++) {
       CameraDelta bestDelta(0, 0, 0, 0, 0);
@@ -98,12 +101,12 @@ namespace monitor {
           view[i][j] = searchCamera.canMonitor(targets[i]);
         }
         double coverage = evalTargetCoverage(view, targetCount, cameraCount);
-#ifdef LOCAL_SEARCH_DEBUG
+//#ifdef LOCAL_SEARCH_DEBUG
 //        std::cout << "After Delta " << searchCamera << ", Coverage: " << coverage << std::endl;
-#endif
+//#endif
         if(coverage > maxCoverage) {
 #ifdef LOCAL_SEARCH_DEBUG
-          std::cout << "Delta (" << delta << ") For" << res[j] << std::endl;
+//          std::cout << "Delta (" << delta << ") For" << res[j] << std::endl;
           std::cout << "Coverage: " << coverage << std::endl;
 #endif
           maxCoverage = coverage;
@@ -142,7 +145,8 @@ namespace monitor {
       for(auto it = cameraIndex.begin(); it != cameraIndex.end(); it++) {
         isViewed |= view[i][*it];
       }
-      viewedCount += isViewed;
+      if(isViewed)
+        viewedCount++;
     }
     return viewedCount / (double)targetCount;
   }
@@ -154,7 +158,8 @@ namespace monitor {
       for(size_t j = 0; j < cameraCount; j++) {
         isViewed |= view[i][j];
       }
-      viewedCount += isViewed;
+      if(isViewed)
+        viewedCount++;
     }
     return viewedCount / (double)targetCount;
   }

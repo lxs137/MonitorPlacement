@@ -214,6 +214,7 @@ namespace monitor {
   }
   std::ostream& operator<<(std::ostream &os, const Grids& grids) {
     os << " Length: " << grids.gridsLength << std::endl;
+    os << " Range: " << grids.gridsIndexStart << " ~ " << grids.gridsIndexEnd << std::endl;
     os << " Grids Count: " << grids.gridsCount << std::endl;
     os << " Data Grids Count: " << grids.getDatagridCount();
     return os;
