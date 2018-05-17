@@ -17,7 +17,7 @@
 #include "voxelizer/mesh.h"
 
 namespace {
-  double resolution[3] = {0.6, 0.6, 0.6};
+  double resolution[3] = {0.5, 0.5, 0.5};
   class CityObjectParserTest : public ::testing::Test {
   public:
     static void SetUpTestCase() {
@@ -152,8 +152,8 @@ int main(int argc, char **argv) {
   if(argc > 1) {
     ::testing::GTEST_FLAG(filter) = argv[1];
   } else {
-//    ::testing::GTEST_FLAG(filter) = "*PARSE_ROAD*";
-    ::testing::GTEST_FLAG(filter) = "*TO_VOXEL_MESH*";
+   ::testing::GTEST_FLAG(filter) = "*PARSE_WINDOW*";
+    // ::testing::GTEST_FLAG(filter) = "*TO_VOXEL_MESH*";
   }
   return RUN_ALL_TESTS();
 }

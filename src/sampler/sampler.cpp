@@ -5,6 +5,8 @@
 #include "sampler/sampler.h"
 
 #include <cmath>
+#include <random>
+#include <ctime>
 
 #include "utils.h"
 
@@ -33,6 +35,29 @@ namespace monitor {
             && cells.putSample(newPoint)) {
           processList.push_back(newPoint);
         }
+      }
+    }
+  }
+
+  void Sampler2D::generateRandomSamples(std::shared_ptr<std::vector<TVec2d>> samples, size_t sampleCount) {
+    std::default_random_engine engine(time(0));
+    std::uniform_int_distribution<int> xUniform(xStart, xEnd), yUniform(yStart, yEnd);
+    for(size_t i = 0; i < sampleCount; i++) {
+      samples->emplace_back(xUniform(engine), xUniform(engine));
+    }
+  }
+
+  void Sampler2D::generateJitterSamples(std::shared_ptr<std::vector<TVec2d>> samples, size_t sampleCount) {
+    double x = std::sqrt((double)sampleCount * width / length);
+    int wCell = (int)x, lCell = (int)(x * length / width);
+    double wCellSize = (double)width / wCell, lCellSize = (double)length / lCell;
+    std::default_random_engine engine(time(0));
+    std::uniform_real_distribution<> wUniform(0, wCellSize), lUniform(0, lCellSize);
+    for(int i = 0; i < wCell; i++) {
+      for(int j = 0; j < lCell; j++) {
+        int y = Clamp((int)(j*lCellSize + lUniform(engine)), yStart, yEnd);
+        int x = Clamp((int)(i*wCellSize + wUniform(engine)), xStart, xEnd);
+        samples->emplace_back(x, y);
       }
     }
   }

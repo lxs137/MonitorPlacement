@@ -73,7 +73,7 @@ namespace monitor {
     return pos;
   }
   std::shared_ptr<monitor::Mesh> Grids::voxelToMesh(const monitor::Voxel &voxel) const {
-    TVec3d resHalf(res.x * 0.5, res.y * 0.5, res.z * 0.5);
+    TVec3d resHalf(res.x * 1.0, res.y * 1.0, res.z * 1.0);
     TVec3d center = voxelToPos(voxel);
     std::vector<TVec3d> vertices;
     vertices.reserve(8);

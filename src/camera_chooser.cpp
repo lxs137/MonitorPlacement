@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iomanip>
 
-#define PRE_CHOOSE_DEBUG
+// #define PRE_CHOOSE_DEBUG
 #define LOCAL_SEARCH_DEBUG
 
 namespace monitor {

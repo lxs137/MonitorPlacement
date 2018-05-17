@@ -20,6 +20,9 @@ namespace monitor {
     // Poisson Disk Sampler
     // http://devmag.org.za/2009/05/03/poisson-disk-sampling/
     void generateSamples(std::shared_ptr<std::vector<TVec2d>> samples, double minDis, int newPointsCount = 30);
+    // Random Sampler
+    void generateRandomSamples(std::shared_ptr<std::vector<TVec2d>> samples, size_t sampleCount);
+    void generateJitterSamples(std::shared_ptr<std::vector<TVec2d>> samples, size_t sampleCount);
   private:
     // Samples Range
     int xStart, xEnd, yStart, yEnd;

@@ -16,14 +16,17 @@
 #include "camera_chooser.h"
 #include "sampler/sampler.h"
 
-#define OUTPUT_OBJ
-//#define OUTPUT_RATE
+// #define OUTPUT_OBJ
+#define OUTPUT_RATE
 // #define OUTPUT_POS
 
 namespace {
   double resolution[3] = {0.5, 0.5, 0.5};
-  double cameraMinDis = resolution[0] * 20;
-  double cameraHeight = 10;
+  // double resolution[3] = {1.0, 1.0, 1.0};
+  // double resolution[3] = {0.25, 0.25, 0.25};
+   double cameraMinDis = 10.0;
+//  double cameraMinDis = 15.0;
+  double cameraHeight = 10.0;
   const double CameraPhiV = 0.0;
   int GreedyFindCameraCount = 20;
   std::shared_ptr<monitor::Grids> gridsPtr = nullptr;
@@ -79,7 +82,9 @@ namespace {
 //      monitor::Sampler2D sampler2D((int)lowerPoint.x, (int)upperPoint.x, (int)lowerPoint.y, (int)upperPoint.y);
       monitor::Sampler2D sampler2D(0, (int)(upperPoint.x - lowerPoint.x), 0, (int)(upperPoint.y - lowerPoint.y));
       std::shared_ptr<std::vector<TVec2d>> samples = std::make_shared<std::vector<TVec2d>>();
-      sampler2D.generateSamples(samples, cameraMinDis);
+//      sampler2D.generateSamples(samples, cameraMinDis);
+//      sampler2D.generateRandomSamples(samples, 120);
+      sampler2D.generateJitterSamples(samples, 120);
       for(auto it = samples->begin(); it != samples->end(); it++) {
         it->x += lowerPoint.x;
         it->y += lowerPoint.y;
@@ -106,7 +111,7 @@ namespace {
 #ifdef OUTPUT_OBJ
       std::vector<monitor::Camera> allCameras;
       allCameras.reserve(validSamples.size());
-      for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
+      for(auto it = samples->begin(); it != samples->end(); it++) {
         TVec3d cameraPos(it->x, it->y, cameraHeight);
         allCameras.emplace_back(CameraMonitorTest::worldGrids, cameraPos, 0.0, CameraPhiV);
       }
@@ -115,7 +120,7 @@ namespace {
         std::shared_ptr<monitor::Mesh> itMesh = CameraMonitorTest::worldGrids->voxelToMesh(it->getPos());
         allCamerasMesh.merge(*itMesh);
       }
-      allCamerasMesh.writeToFile("./data/camera_valid.obj", "Blue");
+      allCamerasMesh.writeToFile("./data/camera_all.obj", "Blue");
 #endif
     }
     virtual void TearDown() {
@@ -260,6 +265,10 @@ namespace {
   TEST_F(CameraMonitorTest, GREEDY_AFTER_LOCAL_SEARCH) {
     EXPECT_GT(validSamples.size(), 0);
 
+#ifdef OUTPUT_RATE
+    double start_t = clock(), end_t;
+#endif
+
     std::vector<monitor::Camera> cameras;
     cameras.reserve(validSamples.size());
     for(auto it = validSamples.begin(); it != validSamples.end(); it++) {
@@ -279,7 +288,8 @@ namespace {
         view[i][j] = cameras[j].canMonitor(targetVoxels[i]);
       }
     }
-    std::cout << "Coverage rate: " << monitor::evalTargetCoverage(view, targetCount, cameraCount) << std::endl;
+    double startCoverageRate = monitor::evalTargetCoverage(view, targetCount, cameraCount);
+    std::cout << "Coverage rate: " << startCoverageRate << std::endl;
 
     // Local Search
     std::vector<monitor::Camera> localSearchCameras;
@@ -322,7 +332,9 @@ namespace {
 #ifdef OUTPUT_RATE
     std::ofstream objFile;
     objFile.open("coverage-rate", std::ios::app);
-    objFile << localSearchCoverageRate << "  " << finalCoverageRate << std::endl;
+    end_t = clock();
+    objFile << "  " << (end_t - start_t)/CLOCKS_PER_SEC << std::endl;
+    objFile << "  " << startCoverageRate << "  " << localSearchCoverageRate << "  " << finalCoverageRate << std::endl;
 #endif
 
 #ifdef OUTPUT_OBJ

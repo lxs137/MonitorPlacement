@@ -78,6 +78,9 @@ namespace monitor {
   inline double cosDegree(const double val) {
     return std::cos(val * DEGREE_TO_RADIAN);
   }
+  inline int Round2Int(const double val) {
+    return (int)(val + 0.5f);
+  }
 }
 
 #endif //UTILS_H

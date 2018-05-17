@@ -20,7 +20,8 @@ namespace monitor {
   const double CAMERA_THETA_H = 80.0;
   const double CAMERA_THETA_H_HALF = 0.5 * CAMERA_THETA_H;
   const double CAMERA_VIEW_DIS = 45.0;
-//  const double CAMERA_VIEW_DIS = 15.0;
+  // const double CAMERA_VIEW_DIS = 22.5;
+  // const double CAMERA_VIEW_DIS = 90.0;
   const double CAMERA_VIEW_DIS_SQUARE = CAMERA_VIEW_DIS * CAMERA_VIEW_DIS;
   const double CAMERA_VIEW_CORNER_DIS = CAMERA_VIEW_DIS / (cosDegree(CAMERA_THETA_V_HALF) * cosDegree(CAMERA_THETA_H_HALF));
   const double CAMERA_VIEW_CORNER_DIS_SQUARE = CAMERA_VIEW_CORNER_DIS * CAMERA_VIEW_CORNER_DIS;
