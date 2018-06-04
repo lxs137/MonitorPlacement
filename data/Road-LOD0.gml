@@ -5,18 +5,18 @@
   <gml:boundedBy>
     <gml:Envelope srsDimension="3" srsName="EPSG:28992">
       <gml:lowerCorner>-6.0 -6.0 0.0</gml:lowerCorner>
-      <gml:upperCorner>165.0 145.0 25.0</gml:upperCorner>
+      <gml:upperCorner>245.0 225.0 25.0</gml:upperCorner>
     </gml:Envelope>
   </gml:boundedBy>
   <cityObjectMember>
-    <tran:Road gml:id="b594bc50-de98-4a31-9457-6bfdd2e73ec4">
+    <tran:Road gml:id="36c4d995-ab7f-4270-a4c9-76561bd3c531">
       <tran:lod1MultiSurface>
         <gml:MultiSurface>
           <gml:surfaceMember>
-            <gml:Polygon gml:id="f099547f-fd7b-45b0-a95b-aeb17a0b6ea7">
+            <gml:Polygon gml:id="f4a8105d-2424-45af-9a13-ba97fcca2774">
               <gml:exterior>
                 <gml:LinearRing>
-                  <gml:posList>-6.0 -6.0 0.0 165.0 -6.0 0.0 165.0 145.0 0.0 -6.0 145.0 0.0 -6.0 -6.0 0.0</gml:posList>
+                  <gml:posList>-6.0 -6.0 0.0 245.0 -6.0 0.0 245.0 225.0 0.0 -6.0 225.0 0.0 -6.0 -6.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:exterior>
               <gml:interior>
@@ -36,7 +36,17 @@
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>-1.0 119.0 0.0 -1.0 140.0 0.0 34.0 140.0 0.0 34.0 119.0 0.0 -1.0 119.0 0.0</gml:posList>
+                  <gml:posList>-1.0 119.0 0.0 -1.0 154.0 0.0 34.0 154.0 0.0 34.0 119.0 0.0 -1.0 119.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>-1.0 159.0 0.0 -1.0 194.0 0.0 34.0 194.0 0.0 34.0 159.0 0.0 -1.0 159.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>-1.0 199.0 0.0 -1.0 220.0 0.0 34.0 220.0 0.0 34.0 199.0 0.0 -1.0 199.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
               <gml:interior>
@@ -56,7 +66,17 @@
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>39.0 119.0 0.0 39.0 140.0 0.0 74.0 140.0 0.0 74.0 119.0 0.0 39.0 119.0 0.0</gml:posList>
+                  <gml:posList>39.0 119.0 0.0 39.0 154.0 0.0 74.0 154.0 0.0 74.0 119.0 0.0 39.0 119.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>39.0 159.0 0.0 39.0 194.0 0.0 74.0 194.0 0.0 74.0 159.0 0.0 39.0 159.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>39.0 199.0 0.0 39.0 220.0 0.0 74.0 220.0 0.0 74.0 199.0 0.0 39.0 199.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
               <gml:interior>
@@ -76,27 +96,107 @@
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>79.0 119.0 0.0 79.0 140.0 0.0 114.0 140.0 0.0 114.0 119.0 0.0 79.0 119.0 0.0</gml:posList>
+                  <gml:posList>79.0 119.0 0.0 79.0 154.0 0.0 114.0 154.0 0.0 114.0 119.0 0.0 79.0 119.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>119.0 -1.0 0.0 119.0 34.0 0.0 160.0 34.0 0.0 160.0 -1.0 0.0 119.0 -1.0 0.0</gml:posList>
+                  <gml:posList>79.0 159.0 0.0 79.0 194.0 0.0 114.0 194.0 0.0 114.0 159.0 0.0 79.0 159.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>119.0 39.0 0.0 119.0 74.0 0.0 160.0 74.0 0.0 160.0 39.0 0.0 119.0 39.0 0.0</gml:posList>
+                  <gml:posList>79.0 199.0 0.0 79.0 220.0 0.0 114.0 220.0 0.0 114.0 199.0 0.0 79.0 199.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>119.0 79.0 0.0 119.0 114.0 0.0 160.0 114.0 0.0 160.0 79.0 0.0 119.0 79.0 0.0</gml:posList>
+                  <gml:posList>119.0 -1.0 0.0 119.0 34.0 0.0 154.0 34.0 0.0 154.0 -1.0 0.0 119.0 -1.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
               <gml:interior>
                 <gml:LinearRing>
-                  <gml:posList>119.0 119.0 0.0 119.0 140.0 0.0 160.0 140.0 0.0 160.0 119.0 0.0 119.0 119.0 0.0</gml:posList>
+                  <gml:posList>119.0 39.0 0.0 119.0 74.0 0.0 154.0 74.0 0.0 154.0 39.0 0.0 119.0 39.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>119.0 79.0 0.0 119.0 114.0 0.0 154.0 114.0 0.0 154.0 79.0 0.0 119.0 79.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>119.0 119.0 0.0 119.0 154.0 0.0 154.0 154.0 0.0 154.0 119.0 0.0 119.0 119.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>119.0 159.0 0.0 119.0 194.0 0.0 154.0 194.0 0.0 154.0 159.0 0.0 119.0 159.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>119.0 199.0 0.0 119.0 220.0 0.0 154.0 220.0 0.0 154.0 199.0 0.0 119.0 199.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>159.0 -1.0 0.0 159.0 34.0 0.0 194.0 34.0 0.0 194.0 -1.0 0.0 159.0 -1.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>159.0 39.0 0.0 159.0 74.0 0.0 194.0 74.0 0.0 194.0 39.0 0.0 159.0 39.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>159.0 79.0 0.0 159.0 114.0 0.0 194.0 114.0 0.0 194.0 79.0 0.0 159.0 79.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>159.0 119.0 0.0 159.0 154.0 0.0 194.0 154.0 0.0 194.0 119.0 0.0 159.0 119.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>159.0 159.0 0.0 159.0 194.0 0.0 194.0 194.0 0.0 194.0 159.0 0.0 159.0 159.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>159.0 199.0 0.0 159.0 220.0 0.0 194.0 220.0 0.0 194.0 199.0 0.0 159.0 199.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>199.0 -1.0 0.0 199.0 34.0 0.0 240.0 34.0 0.0 240.0 -1.0 0.0 199.0 -1.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>199.0 39.0 0.0 199.0 74.0 0.0 240.0 74.0 0.0 240.0 39.0 0.0 199.0 39.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>199.0 79.0 0.0 199.0 114.0 0.0 240.0 114.0 0.0 240.0 79.0 0.0 199.0 79.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>199.0 119.0 0.0 199.0 154.0 0.0 240.0 154.0 0.0 240.0 119.0 0.0 199.0 119.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>199.0 159.0 0.0 199.0 194.0 0.0 240.0 194.0 0.0 240.0 159.0 0.0 199.0 159.0 0.0</gml:posList>
+                </gml:LinearRing>
+              </gml:interior>
+              <gml:interior>
+                <gml:LinearRing>
+                  <gml:posList>199.0 199.0 0.0 199.0 220.0 0.0 240.0 220.0 0.0 240.0 199.0 0.0 199.0 199.0 0.0</gml:posList>
                 </gml:LinearRing>
               </gml:interior>
             </gml:Polygon>

@@ -1,9 +1,9 @@
 #!/bin/bash
 
-DATA_SIZE="50"
+DATA_SIZE="125"
 DATA_DIR="/Users/lxs/workspace/MonitorPlacement/3rdParty/Random3Dcity/data-"${DATA_SIZE}"/"
 WORK_DIR="/Users/lxs/workspace/MonitorPlacement/"
-CAMERA_COUNT="20"
+CAMERA_COUNT="40"
 
 #rm -rf ${DATA_DIR}
 #mkdir ${DATA_DIR}

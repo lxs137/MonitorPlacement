@@ -82,9 +82,9 @@ namespace {
 //      monitor::Sampler2D sampler2D((int)lowerPoint.x, (int)upperPoint.x, (int)lowerPoint.y, (int)upperPoint.y);
       monitor::Sampler2D sampler2D(0, (int)(upperPoint.x - lowerPoint.x), 0, (int)(upperPoint.y - lowerPoint.y));
       std::shared_ptr<std::vector<TVec2d>> samples = std::make_shared<std::vector<TVec2d>>();
-//      sampler2D.generateSamples(samples, cameraMinDis);
+     sampler2D.generateSamples(samples, cameraMinDis);
 //      sampler2D.generateRandomSamples(samples, 120);
-      sampler2D.generateJitterSamples(samples, 120);
+      // sampler2D.generateJitterSamples(samples, 120);
       for(auto it = samples->begin(); it != samples->end(); it++) {
         it->x += lowerPoint.x;
         it->y += lowerPoint.y;
